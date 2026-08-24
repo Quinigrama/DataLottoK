@@ -38,6 +38,7 @@ fun AppSidebar(
     currentRoute: String?,
     onSelectGame: (GameConfig) -> Unit,
     onNavigateToSavedTickets: () -> Unit,
+    onNavigateToStatistics: () -> Unit,
     savedTicketsCount: Int,
     onCloseDrawer: () -> Unit,
     modifier: Modifier = Modifier
@@ -114,8 +115,19 @@ fun AppSidebar(
                     testTag = "drawer_saved_tickets"
                 )
 
+                // Functional: Visualización de Datos / Estadísticas
+                val isStatsActive = currentRoute == NavRoutes.STATISTICS
+                SidebarLinkItem(
+                    text = "📊 Visualización de Datos",
+                    isActive = isStatsActive,
+                    onClick = {
+                        onNavigateToStatistics()
+                        onCloseDrawer()
+                    },
+                    testTag = "drawer_statistics"
+                )
+
                 // Disabled tools
-                DisabledSidebarLinkItem(text = "📊 Visualización de Datos")
                 DisabledSidebarLinkItem(text = "🧠 Big Data Intelligence")
                 DisabledSidebarLinkItem(text = "🔬 Backtesting Avanzado")
                 DisabledSidebarLinkItem(text = "🧮 Calculadora")

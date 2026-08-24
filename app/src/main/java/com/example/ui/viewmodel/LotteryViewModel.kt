@@ -51,11 +51,23 @@ class LotteryViewModel(
     private val _winningSecondaryNumbers = MutableStateFlow<Set<Int>>(emptySet())
     val winningSecondaryNumbers: StateFlow<Set<Int>> = _winningSecondaryNumbers.asStateFlow()
 
+    // Estado para datos simulados de estadísticas (en memoria)
+    private val _simulatedDraws = MutableStateFlow<List<com.example.logic.SimulatedDraw>>(emptyList())
+    val simulatedDraws: StateFlow<List<com.example.logic.SimulatedDraw>> = _simulatedDraws.asStateFlow()
+
+    fun simulateDraws(count: Int = 200) {
+        val game = _currentGame.value
+        val draws = com.example.logic.StatisticsEngine.generateSimulatedDraws(game, count)
+        _simulatedDraws.value = draws
+        _userFeedback.value = "🎲 Simulados $count sorteos para ${game.name}"
+    }
+
     fun selectGame(game: GameConfig) {
         if (_currentGame.value.id != game.id) {
             _currentGame.value = game
             _selectedNumbers.value = emptySet()
             _selectedSecondaryNumbers.value = emptySet()
+            _simulatedDraws.value = emptyList()
             _userFeedback.value = "Cambiado a ${game.name}"
         }
     }

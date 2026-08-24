@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.ui.screens.generator.GeneratorScreen
+import com.example.ui.screens.stats.StatisticsScreen
 import com.example.ui.screens.tickets.SavedTicketsScreen
 import com.example.ui.viewmodel.LotteryViewModel
 import kotlinx.coroutines.launch
@@ -53,6 +54,11 @@ fun AppNavHost(
                         navController.navigate(NavRoutes.SAVED_TICKETS)
                     }
                 },
+                onNavigateToStatistics = {
+                    if (currentRoute != NavRoutes.STATISTICS) {
+                        navController.navigate(NavRoutes.STATISTICS)
+                    }
+                },
                 savedTicketsCount = savedTickets.size,
                 onCloseDrawer = {
                     coroutineScope.launch {
@@ -83,6 +89,15 @@ fun AppNavHost(
 
             composable(NavRoutes.SAVED_TICKETS) {
                 SavedTicketsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(NavRoutes.STATISTICS) {
+                StatisticsScreen(
                     viewModel = viewModel,
                     onNavigateBack = {
                         navController.popBackStack()

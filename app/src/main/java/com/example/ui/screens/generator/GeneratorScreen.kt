@@ -33,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -64,11 +65,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
+import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
+import com.example.ui.theme.BrandDanger
 import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandGradientEnd
 import com.example.ui.theme.BrandGradientStart
 import com.example.ui.theme.BrandIndigo
+import com.example.ui.theme.BrandSuccess
+import com.example.ui.theme.BrandWarning
 import com.example.ui.viewmodel.LotteryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -101,6 +106,18 @@ fun GeneratorScreen(
 
     val sortedSelected = selectedNumbers.toList().sorted()
     val sortedSecondary = selectedSecondaryNumbers.toList().sorted()
+
+    val (qualityScore, qualityValuation) = remember(currentGame, selectedNumbers, selectedSecondaryNumbers) {
+        if (selectedNumbers.isNotEmpty()) {
+            StatisticsEngine.calculateQualityScore(
+                game = currentGame,
+                selectedNumbers = selectedNumbers,
+                selectedSecondary = selectedSecondaryNumbers
+            )
+        } else {
+            Pair(50, "")
+        }
+    }
 
     val gamePrimaryColor by animateColorAsState(
         targetValue = currentGame.primaryColor,
@@ -416,11 +433,107 @@ fun GeneratorScreen(
                                 }
                             }
                         }
-                    }
-                }
+                    } // closes Card
+                } // closes item for Header Summary Card
 
-                // Primary Numbers Grid Card
-                item {
+                // Real-time Combination Quality Card (shown when at least 1 number is selected)
+                if (selectedNumbers.isNotEmpty()) {
+                    item {
+                            val scoreColor = when {
+                                qualityScore >= 80 -> BrandSuccess
+                                qualityScore >= 60 -> BrandWarning
+                                qualityScore >= 40 -> Color(0xFFF97316)
+                                else -> BrandDanger
+                            }
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                                    .testTag("combination_quality_card"),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Text(text = "⚡", fontSize = 16.sp)
+                                            Text(
+                                                text = "Calidad de la Combinación",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandDark
+                                            )
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    scoreColor.copy(alpha = 0.12f),
+                                                    RoundedCornerShape(8.dp)
+                                                )
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = "$qualityScore%",
+                                                color = scoreColor,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    }
+
+                                    LinearProgressIndicator(
+                                        progress = { qualityScore.toFloat() / 100f },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(6.dp)
+                                            .clip(RoundedCornerShape(3.dp)),
+                                        color = scoreColor,
+                                        trackColor = Color(0xFFF1F5F9)
+                                    )
+
+                                    Text(
+                                        text = qualityValuation,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = BrandDark,
+                                        fontWeight = FontWeight.Medium,
+                                        lineHeight = 16.sp
+                                    )
+
+                                    HorizontalDivider(
+                                        color = Color(0xFFF1F5F9),
+                                        thickness = 1.dp,
+                                        modifier = Modifier.padding(vertical = 2.dp)
+                                    )
+
+                                    Text(
+                                        text = "El azar de cada sorteo es independiente; esta puntuación no aumenta tus probabilidades de ganar.",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color(0xFF64748B),
+                                        fontSize = 10.5.sp,
+                                        lineHeight = 13.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Primary Numbers Grid Card
+                    item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
