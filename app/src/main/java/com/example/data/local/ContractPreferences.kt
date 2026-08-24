@@ -79,16 +79,17 @@ REGISTRO DE CONFORMIDAD - DATALOTTO
 
 ID DE REGISTRO:      $sigId
 FECHA Y HORA:        $sigDate
-ESTADO DE REGISTRO:  ACEPTADO Y FIRMADO DIGITALMENTE
+ESTADO DE REGISTRO:  ACEPTADO Y VERIFICADO DIGITALMENTE
 ID DE DISPOSITIVO:   $anonId
 
 CLÁUSULAS DE CONFORMIDAD Y EXENCIÓN DE RESPONSABILIDAD ACEPTADAS:
-1. El usuario reconoce expresamente que DataLotto es una herramienta de análisis estadístico y entretenimiento.
-2. El usuario comprende y acepta que los juegos de azar son impredecibles y que ninguna estrategia o análisis garantiza premios.
-3. El usuario asume toda la responsabilidad sobre el uso de los datos y cualquier decisión económica o de juego.
-4. El usuario declara ser mayor de edad legal para participar en juegos de azar en su jurisdicción.
-5. El usuario se compromete a realizar un juego responsable y conoce los riesgos asociados a la ludopatía.
+1. El usuario reconoce expresamente que DataLotto es un software destinado exclusivamente al entretenimiento y análisis estadístico.
+2. NINGUNA ESTRATEGIA A LARGO PLAZO VENCE AL AZAR. Los juegos de lotería son de probabilidad pura e independientes entre sí.
+3. El usuario reconoce el riesgo de ludopatía asociado a los juegos de azar y se compromete a un uso responsable.
+4. El usuario declara ser mayor de edad legal en su jurisdicción.
+5. El desarrollador queda totalmente exonerado de cualquier responsabilidad o pérdida económica derivada del uso de esta aplicación.
 
+ESTE LOG CONSTITUYE PRUEBA DE CONFORMIDAD DIGITAL
 ================================================================================
 """.trimIndent()
     }
