@@ -1007,7 +1007,13 @@ fun GeneratorScreen(
                         ) {
                             // Generar Combinación Button
                             Button(
-                                onClick = { viewModel.generateCombination() },
+                                onClick = {
+                                    if (strategy == "multiple") {
+                                        viewModel.generateMultipleCombination()
+                                    } else {
+                                        viewModel.generateCombination()
+                                    }
+                                },
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
