@@ -1,0 +1,6 @@
+{
+  "name": "DataLotto",
+  "description": "Generador de combinaciones y gestor de boletos de lotería",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
