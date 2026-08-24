@@ -24,18 +24,18 @@ object PrizeCalculator {
      * Tabla oficial completa de las 13 categorías de Euromillones
      */
     val EUROMILLONES_TIERS = listOf(
-        PrizeTier(category = 1, name = "1ª Categoría (5 + 2⭐)", hits = 5, starHits = 2, basePrize = 17_000_000.0),
-        PrizeTier(category = 2, name = "2ª Categoría (5 + 1⭐)", hits = 5, starHits = 1, basePrize = 200_738.0),
-        PrizeTier(category = 3, name = "3ª Categoría (5 + 0⭐)", hits = 5, starHits = 0, basePrize = 20_851.0),
-        PrizeTier(category = 4, name = "4ª Categoría (4 + 2⭐)", hits = 4, starHits = 2, basePrize = 1_299.0),
+        PrizeTier(category = 1, name = "1ª Categoría (5 + 2⭐)", hits = 5, starHits = 2, basePrize = 17000000.0),
+        PrizeTier(category = 2, name = "2ª Categoría (5 + 1⭐)", hits = 5, starHits = 1, basePrize = 200000.0),
+        PrizeTier(category = 3, name = "3ª Categoría (5 + 0⭐)", hits = 5, starHits = 0, basePrize = 20000.0),
+        PrizeTier(category = 4, name = "4ª Categoría (4 + 2⭐)", hits = 4, starHits = 2, basePrize = 1500.0),
         PrizeTier(category = 5, name = "5ª Categoría (4 + 1⭐)", hits = 4, starHits = 1, basePrize = 120.0),
-        PrizeTier(category = 6, name = "6ª Categoría (3 + 2⭐)", hits = 3, starHits = 2, basePrize = 57.0),
-        PrizeTier(category = 7, name = "7ª Categoría (4 + 0⭐)", hits = 4, starHits = 0, basePrize = 39.0),
-        PrizeTier(category = 8, name = "8ª Categoría (2 + 2⭐)", hits = 2, starHits = 2, basePrize = 14.0),
-        PrizeTier(category = 9, name = "9ª Categoría (3 + 1⭐)", hits = 3, starHits = 1, basePrize = 11.0),
-        PrizeTier(category = 10, name = "10ª Categoría (3 + 0⭐)", hits = 3, starHits = 0, basePrize = 9.0),
-        PrizeTier(category = 11, name = "11ª Categoría (1 + 2⭐)", hits = 1, starHits = 2, basePrize = 7.0),
-        PrizeTier(category = 12, name = "12ª Categoría (2 + 1⭐)", hits = 2, starHits = 1, basePrize = 6.0),
+        PrizeTier(category = 6, name = "6ª Categoría (3 + 2⭐)", hits = 3, starHits = 2, basePrize = 60.0),
+        PrizeTier(category = 7, name = "7ª Categoría (4 + 0⭐)", hits = 4, starHits = 0, basePrize = 40.0),
+        PrizeTier(category = 8, name = "8ª Categoría (2 + 2⭐)", hits = 2, starHits = 2, basePrize = 15.0),
+        PrizeTier(category = 9, name = "9ª Categoría (3 + 1⭐)", hits = 3, starHits = 1, basePrize = 12.0),
+        PrizeTier(category = 10, name = "10ª Categoría (3 + 0⭐)", hits = 3, starHits = 0, basePrize = 10.0),
+        PrizeTier(category = 11, name = "11ª Categoría (1 + 2⭐)", hits = 1, starHits = 2, basePrize = 9.0),
+        PrizeTier(category = 12, name = "12ª Categoría (2 + 1⭐)", hits = 2, starHits = 1, basePrize = 7.0),
         PrizeTier(category = 13, name = "13ª Categoría (2 + 0⭐)", hits = 2, starHits = 0, basePrize = 4.0)
     )
 
