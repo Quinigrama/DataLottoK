@@ -82,6 +82,7 @@ import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
 import com.example.ui.theme.LocalExtraColors
+import com.example.ui.theme.tr
 import com.example.ui.viewmodel.LotteryViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -139,7 +140,7 @@ fun SavedTicketsScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Mis Boletos Guardados",
+                            text = tr("Mis Boletos Guardados", "My Saved Tickets"),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -151,7 +152,7 @@ fun SavedTicketsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
+                                contentDescription = tr("Volver", "Back"),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -171,9 +172,9 @@ fun SavedTicketsScreen(
             ) {
                 if (savedTickets.isEmpty()) {
                     EmptyTicketsView(
-                        message = "No tienes boletos guardados",
-                        description = "Genera o elige tus números en la pantalla principal y pulsa \"Guardar Boleto\" para guardarlos aquí.",
-                        buttonText = "🍀 Ir al Generador",
+                        message = tr("No tienes boletos guardados", "You have no saved tickets"),
+                        description = tr("Genera o elige tus números en la pantalla principal y pulsa \"Guardar Boleto\" para guardarlos aquí.", "Generate or pick your numbers on the main screen and tap \"Save Ticket\" to keep them here."),
+                        buttonText = tr("🍀 Ir al Generador", "🍀 Go to Generator"),
                         onButtonClick = onNavigateBack,
                         modifier = Modifier.padding(24.dp)
                     )
@@ -208,7 +209,7 @@ fun SavedTicketsScreen(
                                         onClick = { viewModel.setTicketFilter(null) },
                                         label = {
                                             Text(
-                                                text = "Todos (${savedTickets.size})",
+                                                text = "${tr("Todos", "All")} (${savedTickets.size})",
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                             )
                                         },
@@ -259,9 +260,9 @@ fun SavedTicketsScreen(
 
                         if (filteredTickets.isEmpty()) {
                             EmptyTicketsView(
-                                message = "No hay boletos de este juego",
-                                description = "No has guardado combinaciones para este filtro todavía.",
-                                buttonText = "Mostrar todos los boletos",
+                                message = tr("No hay boletos de este juego", "No tickets for this game"),
+                                description = tr("No has guardado combinaciones para este filtro todavía.", "You haven't saved combinations for this filter yet."),
+                                buttonText = tr("Mostrar todos los boletos", "Show all tickets"),
                                 onButtonClick = { viewModel.setTicketFilter(null) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -384,7 +385,7 @@ fun TicketCard(
                                 .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = if (ticket.secondaryNumbers.isNotEmpty()) "🎯 Múltiple de ${ticket.numbers.size}+${ticket.secondaryNumbers.size}⭐" else "🎯 Múltiple de ${ticket.numbers.size}",
+                                text = if (ticket.secondaryNumbers.isNotEmpty()) tr("🎯 Múltiple de ${ticket.numbers.size}+${ticket.secondaryNumbers.size}⭐", "🎯 Multiple of ${ticket.numbers.size}+${ticket.secondaryNumbers.size}⭐") else tr("🎯 Múltiple de ${ticket.numbers.size}", "🎯 Multiple of ${ticket.numbers.size}"),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = BrandIndigo
@@ -393,9 +394,9 @@ fun TicketCard(
                     } else if (ticket.strategy == "reducida") {
                         val system = ReducedSystemCalculator.findSystem(ticket.gameId, ticket.systemId)
                         val label = if (system != null) {
-                            "🧩 Reducida de ${system.baseNumbersCount} (${system.combinationsCount} apuestas)"
+                            tr("🧩 Reducida de ${system.baseNumbersCount} (${system.combinationsCount} apuestas)", "🧩 Reduced of ${system.baseNumbersCount} (${system.combinationsCount} bets)")
                         } else {
-                            "🧩 Sistema Reducido"
+                            tr("🧩 Sistema Reducido", "🧩 Reduced System")
                         }
                         Box(
                             modifier = Modifier
@@ -429,7 +430,7 @@ fun TicketCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar boleto",
+                        contentDescription = tr("Eliminar boleto", "Delete ticket"),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                         modifier = Modifier.size(20.dp)
                     )
@@ -487,9 +488,9 @@ fun TicketCard(
             // Validation status and Action
             if (ticket.strategy == "multiple" || ticket.strategy == "reducida") {
                 val infoText = if (ticket.strategy == "multiple") {
-                    "ℹ️ La validación de boletos múltiples llegará en una fase posterior"
+                    tr("ℹ️ La validación de boletos múltiples llegará en una fase posterior", "ℹ️ Multiple ticket validation will arrive in a later phase")
                 } else {
-                    "ℹ️ La validación de boletos con sistema reducido llegará en una fase posterior"
+                    tr("ℹ️ La validación de boletos con sistema reducido llegará en una fase posterior", "ℹ️ Reduced system ticket validation will arrive in a later phase")
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -535,7 +536,7 @@ fun TicketCard(
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
-                                        text = "✓ Validado",
+                                        text = tr("✓ Validado", "✓ Validated"),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (isWinning) BrandSuccess else MaterialTheme.colorScheme.onSurfaceVariant
@@ -544,7 +545,7 @@ fun TicketCard(
                             }
 
                             Text(
-                                text = ticket.prizeLabel ?: "Sin premio",
+                                text = if (ticket.prizeLabel == "Sin premio") tr("Sin premio", "No prize") else (ticket.prizeLabel ?: tr("Sin premio", "No prize")),
                                 fontSize = 12.sp,
                                 fontWeight = if (isWinning) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isWinning) BrandSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -561,14 +562,14 @@ fun TicketCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "Re-validar",
+                                contentDescription = tr("Re-validar", "Re-validate"),
                                 tint = BrandIndigo,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                     } else {
                         Text(
-                            text = "Pendiente de validación",
+                            text = tr("Pendiente de validación", "Pending validation"),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -591,7 +592,7 @@ fun TicketCard(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Validar",
+                                text = tr("Validar", "Validate"),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -650,7 +651,7 @@ fun TicketValidationDialog(
                 ) {
                     Column {
                         Text(
-                            text = "Validar Boleto",
+                            text = tr("Validar Boleto", "Validate Ticket"),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -669,7 +670,7 @@ fun TicketValidationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = tr("Cerrar", "Close"),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -701,13 +702,13 @@ fun TicketValidationDialog(
                         )
                         Column {
                             Text(
-                                text = "Días de sorteo oficiales",
+                                text = tr("Días de sorteo oficiales", "Official draw days"),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = BrandIndigo
                             )
                             Text(
-                                text = "Este juego sortea: ${gameConfig.formatDrawDays()}",
+                                text = tr("Este juego sortea: ${gameConfig.formatDrawDays()}", "This game draws on: ${gameConfig.formatDrawDays()}"),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -726,7 +727,7 @@ fun TicketValidationDialog(
                 ) {
                     // Played combination preview
                     Text(
-                        text = "Tu combinación guardada:",
+                        text = tr("Tu combinación guardada:", "Your saved combination:"),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -777,7 +778,7 @@ fun TicketValidationDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Números Ganadores:",
+                            text = tr("Números Ganadores:", "Winning Numbers:"),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface
@@ -826,7 +827,7 @@ fun TicketValidationDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${gameConfig.secondaryEmoji ?: "⭐"} ${gameConfig.secondaryName ?: "Estrellas"} Ganadoras:",
+                                text = tr("${gameConfig.secondaryEmoji ?: "⭐"} ${gameConfig.secondaryName ?: "Estrellas"} Ganadoras:", "${gameConfig.secondaryEmoji ?: "⭐"} Winning ${gameConfig.secondaryName ?: "Stars"}:"),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -882,7 +883,7 @@ fun TicketValidationDialog(
                             .testTag("cancel_validation_button"),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Cancelar", fontWeight = FontWeight.SemiBold)
+                        Text(tr("Cancelar", "Cancel"), fontWeight = FontWeight.SemiBold)
                     }
 
                     Button(
@@ -904,7 +905,7 @@ fun TicketValidationDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Confirmar Validación",
+                            text = tr("Confirmar Validación", "Confirm Validation"),
                             fontWeight = FontWeight.Bold
                         )
                     }

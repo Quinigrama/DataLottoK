@@ -79,6 +79,7 @@ import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
 import com.example.ui.theme.LocalExtraColors
+import com.example.ui.theme.tr
 import com.example.ui.viewmodel.LotteryViewModel
 import java.util.Locale
 
@@ -199,7 +200,7 @@ fun GeneratorScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Menú",
+                                contentDescription = tr("Menú", "Menu"),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -210,7 +211,7 @@ fun GeneratorScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "DataLotto",
+                                text = tr("DataLotto", "DataLotto"),
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -235,7 +236,7 @@ fun GeneratorScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
-                                contentDescription = "Disclaimer Ético",
+                                contentDescription = tr("Disclaimer Ético", "Ethics Disclaimer"),
                                 tint = BrandWarning
                             )
                         }
@@ -257,7 +258,7 @@ fun GeneratorScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.FolderOpen,
-                                    contentDescription = "Mis Boletos",
+                                    contentDescription = tr("Mis Boletos", "My Tickets"),
                                     tint = BrandIndigo
                                 )
                             }
@@ -355,7 +356,7 @@ fun GeneratorScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "🎲 Simple",
+                                text = tr("🎲 Simple", "🎲 Simple"),
                                 fontWeight = if (isSimple) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isSimple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
@@ -373,7 +374,7 @@ fun GeneratorScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "🎯 Múltiple",
+                                text = tr("🎯 Múltiple", "🎯 Multiple"),
                                 fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isMultiple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
@@ -391,7 +392,7 @@ fun GeneratorScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "🧩 Reducida",
+                                text = tr("🧩 Reducida", "🧩 Reduced"),
                                 fontWeight = if (isReduced) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isReduced) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
@@ -425,7 +426,7 @@ fun GeneratorScreen(
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Text(
-                                        text = "Configuración de Apuesta Múltiple",
+                                        text = tr("Configuración de Apuesta Múltiple", "Multiple Bet Configuration"),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -434,7 +435,7 @@ fun GeneratorScreen(
                                     // Primary count selector
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text(
-                                            text = if (currentGame.hasSecondaryMatrix) "Cantidad de números principales:" else "Cantidad de números a combinar:",
+                                            text = if (currentGame.hasSecondaryMatrix) tr("Cantidad de números principales:", "Number of main numbers:") else tr("Cantidad de números a combinar:", "Number of numbers to combine:"),
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.SemiBold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -451,7 +452,7 @@ fun GeneratorScreen(
                                                     onClick = { viewModel.setMultipleNumberCount(count) },
                                                     label = {
                                                         Text(
-                                                            text = "$count números",
+                                                            text = "$count ${tr("números", "numbers")}",
                                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                                             fontSize = 12.sp
                                                         )
@@ -470,7 +471,7 @@ fun GeneratorScreen(
                                     if (currentGame.hasSecondaryMatrix && multipleOptions.secondaryChoices.isNotEmpty()) {
                                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                             Text(
-                                                text = "Cantidad de ${currentGame.secondaryName?.lowercase() ?: "estrellas"}:",
+                                                text = tr("Cantidad de ${currentGame.secondaryName?.lowercase() ?: "estrellas"}:", "Number of ${currentGame.secondaryName?.lowercase() ?: "stars"}:"),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -541,13 +542,13 @@ fun GeneratorScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "Combinaciones cubiertas:",
+                                                text = tr("Combinaciones cubiertas:", "Combinations covered:"),
                                                 fontSize = 12.5.sp,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontWeight = FontWeight.Medium
                                             )
                                             Text(
-                                                text = "$liveBets apuestas · ${String.format(Locale.getDefault(), "%.2f", liveCost)} €",
+                                                text = "$liveBets ${tr("apuestas", "bets")} · ${String.format(Locale.getDefault(), "%.2f", liveCost)} €",
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
@@ -576,7 +577,7 @@ fun GeneratorScreen(
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Text(
-                                        text = "Configuración de Sistema Reducido",
+                                        text = tr("Configuración de Sistema Reducido", "Reduced System Configuration"),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -595,7 +596,7 @@ fun GeneratorScreen(
                                                 onClick = { viewModel.setReducedSystemId(sys.id) },
                                                 label = {
                                                     Text(
-                                                        text = "${sys.baseNumbersCount} núm. · ${sys.guarantee} aciertos",
+                                                        text = "${sys.baseNumbersCount} ${tr("núm.", "nums.")} · ${sys.guarantee} ${tr("aciertos", "hits")}",
                                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                                         fontSize = 12.sp
                                                     )
@@ -627,13 +628,13 @@ fun GeneratorScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "Combinaciones cubiertas:",
+                                                text = tr("Combinaciones cubiertas:", "Combinations covered:"),
                                                 fontSize = 12.5.sp,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontWeight = FontWeight.Medium
                                             )
                                             Text(
-                                                text = "${sys.combinationsCount} apuestas · ${String.format(Locale.getDefault(), "%.2f", totalCost)} €",
+                                                text = "${sys.combinationsCount} ${tr("apuestas", "bets")} · ${String.format(Locale.getDefault(), "%.2f", totalCost)} €",
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
@@ -669,14 +670,14 @@ fun GeneratorScreen(
                                     if (strategy == "multiple") {
                                         if (currentGame.hasSecondaryMatrix) {
                                             Text(
-                                                text = "${selectedNumbers.size}/$multipleNumberCount núm. • ${selectedSecondaryNumbers.size}/$multipleSecondaryCount ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                text = tr("${selectedNumbers.size}/$multipleNumberCount núm. • ${selectedSecondaryNumbers.size}/$multipleSecondaryCount ${currentGame.secondaryName?.lowercase() ?: "estrellas"}", "${selectedNumbers.size}/$multipleNumberCount numbers • ${selectedSecondaryNumbers.size}/$multipleSecondaryCount ${currentGame.secondaryName?.lowercase() ?: "stars"}"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
-                                                text = "${selectedNumbers.size}/$multipleNumberCount números seleccionados",
+                                                text = tr("${selectedNumbers.size}/$multipleNumberCount números seleccionados", "${selectedNumbers.size}/$multipleNumberCount numbers selected"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
@@ -686,14 +687,14 @@ fun GeneratorScreen(
                                         val baseCount = selectedReducedSystem?.baseNumbersCount ?: 0
                                         if (currentGame.hasSecondaryMatrix) {
                                             Text(
-                                                text = "${selectedNumbers.size}/$baseCount núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                text = tr("${selectedNumbers.size}/$baseCount núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}", "${selectedNumbers.size}/$baseCount numbers • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "stars"}"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
-                                                text = "${selectedNumbers.size}/$baseCount números seleccionados",
+                                                text = tr("${selectedNumbers.size}/$baseCount números seleccionados", "${selectedNumbers.size}/$baseCount numbers selected"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
@@ -702,14 +703,14 @@ fun GeneratorScreen(
                                     } else {
                                         if (currentGame.hasSecondaryMatrix) {
                                             Text(
-                                                text = "${selectedNumbers.size}/${currentGame.pickCount} núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                text = tr("${selectedNumbers.size}/${currentGame.pickCount} núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}", "${selectedNumbers.size}/${currentGame.pickCount} numbers • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "stars"}"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
-                                                text = "${selectedNumbers.size}/${currentGame.pickCount} números seleccionados",
+                                                text = tr("${selectedNumbers.size}/${currentGame.pickCount} números seleccionados", "${selectedNumbers.size}/${currentGame.pickCount} numbers selected"),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
@@ -729,7 +730,7 @@ fun GeneratorScreen(
                                                 modifier = Modifier.size(18.dp)
                                             )
                                             Text(
-                                                text = "¡Listo!",
+                                                text = tr("¡Listo!", "Ready!"),
                                                 style = MaterialTheme.typography.labelMedium,
                                                 color = gamePrimaryColor,
                                                 fontWeight = FontWeight.Bold
@@ -768,7 +769,7 @@ fun GeneratorScreen(
                                 if (strategy == "multiple") {
                                     if (selectedNumbers.isEmpty()) {
                                         Text(
-                                            text = "Pulsa \"🎯 Generar Múltiple\" para generar los $multipleNumberCount números al azar",
+                                            text = tr("Pulsa \"🎯 Generar Múltiple\" para generar los $multipleNumberCount números al azar", "Tap \"🎯 Generate Multiple\" to generate $multipleNumberCount numbers at random"),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -816,7 +817,7 @@ fun GeneratorScreen(
                                 } else if (strategy == "reducida") {
                                     if (selectedNumbers.isEmpty()) {
                                         Text(
-                                            text = "Toca los números en la cuadrícula para seleccionar los ${selectedReducedSystem?.baseNumbersCount ?: 0} números base",
+                                            text = tr("Toca los números en la cuadrícula para seleccionar los ${selectedReducedSystem?.baseNumbersCount ?: 0} números base", "Tap the numbers in the grid to select the ${selectedReducedSystem?.baseNumbersCount ?: 0} base numbers"),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -991,7 +992,7 @@ fun GeneratorScreen(
                                         ) {
                                             Text(text = "⚡", fontSize = 16.sp)
                                             Text(
-                                                text = "Calidad de la Combinación",
+                                                text = tr("Calidad de la Combinación", "Combination Quality"),
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
@@ -1040,7 +1041,7 @@ fun GeneratorScreen(
                                     )
 
                                     Text(
-                                        text = "El azar de cada sorteo es independiente; esta puntuación no aumenta tus probabilidades de ganar.",
+                                        text = tr("El azar de cada sorteo es independiente; esta puntuación no aumenta tus probabilidades de ganar.", "Each draw's chance is independent; this score does not increase your odds of winning."),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 10.5.sp,
@@ -1077,7 +1078,7 @@ fun GeneratorScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = if (currentGame.hasSecondaryMatrix) "Números principales (1-${currentGame.maxNumber})" else "Números (1-${currentGame.maxNumber})",
+                                            text = if (currentGame.hasSecondaryMatrix) tr("Números principales (1-${currentGame.maxNumber})", "Main numbers (1-${currentGame.maxNumber})") else tr("Números (1-${currentGame.maxNumber})", "Numbers (1-${currentGame.maxNumber})"),
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -1240,9 +1241,9 @@ fun GeneratorScreen(
                             ) {
                                 Text(
                                     text = when (strategy) {
-                                        "multiple" -> "🎯 Generar Múltiple"
-                                        "reducida" -> "🧩 Generar Reducida"
-                                        else -> "🍀 Generar Combinación"
+                                        "multiple" -> tr("🎯 Generar Múltiple", "🎯 Generate Multiple")
+                                        "reducida" -> tr("🧩 Generar Reducida", "🧩 Generate Reduced")
+                                        else -> tr("🍀 Generar Combinación", "🍀 Generate Combination")
                                     },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
@@ -1259,7 +1260,7 @@ fun GeneratorScreen(
                                 enabled = selectedNumbers.isNotEmpty() || selectedSecondaryNumbers.isNotEmpty()
                             ) {
                                 Text(
-                                    text = "🗑️ Limpiar",
+                                    text = tr("🗑️ Limpiar", "🗑️ Clear"),
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp
                                 )
@@ -1288,9 +1289,9 @@ fun GeneratorScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = when (strategy) {
-                                    "multiple" -> "💾 Guardar Boleto Múltiple (${currentGame.name})"
-                                    "reducida" -> "💾 Guardar Boleto Reducido (${currentGame.name})"
-                                    else -> "💾 Guardar Boleto (${currentGame.name})"
+                                    "multiple" -> tr("💾 Guardar Boleto Múltiple (${currentGame.name})", "💾 Save Multiple Ticket (${currentGame.name})")
+                                    "reducida" -> tr("💾 Guardar Boleto Reducido (${currentGame.name})", "💾 Save Reduced Ticket (${currentGame.name})")
+                                    else -> tr("💾 Guardar Boleto (${currentGame.name})", "💾 Save Ticket (${currentGame.name})")
                                 },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,

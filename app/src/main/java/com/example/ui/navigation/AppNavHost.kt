@@ -26,7 +26,9 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     isDarkMode: Boolean = false,
-    onToggleDarkMode: () -> Unit = {}
+    onToggleDarkMode: () -> Unit = {},
+    locale: String = "es",
+    onToggleLocale: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
@@ -69,7 +71,9 @@ fun AppNavHost(
                     }
                 },
                 isDarkMode = isDarkMode,
-                onToggleDarkMode = onToggleDarkMode
+                onToggleDarkMode = onToggleDarkMode,
+                locale = locale,
+                onToggleLocale = onToggleLocale
             )
         },
         modifier = modifier

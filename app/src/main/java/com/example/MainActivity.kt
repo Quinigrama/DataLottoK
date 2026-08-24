@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.data.local.AppDatabase
 import com.example.data.local.ContractPreferences
+import com.example.data.local.LocalePreferences
 import com.example.data.local.ThemePreferences
 import com.example.data.repository.TicketRepository
 import com.example.ui.navigation.AppNavHost
@@ -35,6 +36,9 @@ class MainActivity : ComponentActivity() {
             val isDarkMode = remember {
                 mutableStateOf(ThemePreferences.isDarkMode(applicationContext))
             }
+            val currentLocale = remember {
+                mutableStateOf(LocalePreferences.getLocale(applicationContext))
+            }
 
             if (!isContractAccepted.value) {
                 ResponsibleUseContractScreen(
@@ -43,7 +47,10 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             } else {
-                DataLottoTheme(darkTheme = isDarkMode.value) {
+                DataLottoTheme(
+                    darkTheme = isDarkMode.value,
+                    locale = currentLocale.value
+                ) {
                     AppNavHost(
                         viewModel = viewModel,
                         isDarkMode = isDarkMode.value,
@@ -51,6 +58,12 @@ class MainActivity : ComponentActivity() {
                             val newVal = !isDarkMode.value
                             isDarkMode.value = newVal
                             ThemePreferences.setDarkMode(applicationContext, newVal)
+                        },
+                        locale = currentLocale.value,
+                        onToggleLocale = {
+                            val nextLocale = if (currentLocale.value == "es") "en" else "es"
+                            currentLocale.value = nextLocale
+                            LocalePreferences.setLocale(applicationContext, nextLocale)
                         }
                     )
                 }

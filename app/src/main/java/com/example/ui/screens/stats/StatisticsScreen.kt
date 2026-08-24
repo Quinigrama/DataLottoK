@@ -83,6 +83,7 @@ import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
 import com.example.ui.theme.LocalExtraColors
+import com.example.ui.theme.tr
 import com.example.ui.viewmodel.LotteryViewModel
 import java.util.Locale
 
@@ -159,7 +160,7 @@ fun StatisticsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
+                                contentDescription = tr("Volver", "Back"),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -170,7 +171,7 @@ fun StatisticsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "📊 Estadísticas",
+                                text = tr("📊 Estadísticas", "📊 Statistics"),
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -278,7 +279,7 @@ fun StatisticsScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = "Estas frecuencias son sobre datos simulados aleatoriamente, no sorteos reales. La frecuencia pasada no predice el próximo sorteo.",
+                            text = tr("Estas frecuencias son sobre datos simulados aleatoriamente, no sorteos reales. La frecuencia pasada no predice el próximo sorteo.", "These frequencies are based on randomly simulated data, not real draws. Past frequency does not predict the next draw."),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF78350F),
@@ -308,13 +309,13 @@ fun StatisticsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Generador de Frecuencias",
+                                    text = tr("Generador de Frecuencias", "Frequency Generator"),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = if (simulatedDraws.isNotEmpty()) "${simulatedDraws.size} sorteos analizados" else "Sin sorteos generados",
+                                    text = if (simulatedDraws.isNotEmpty()) tr("${simulatedDraws.size} sorteos analizados", "${simulatedDraws.size} draws analyzed") else tr("Sin sorteos generados", "No draws generated"),
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -336,7 +337,7 @@ fun StatisticsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "🎲 Simular 200 Sorteos",
+                                    text = tr("🎲 Simular 200 Sorteos", "🎲 Simulate 200 Draws"),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
                                 )
@@ -357,7 +358,7 @@ fun StatisticsScreen(
                                 ) {
                                     Text(text = "🔥", fontSize = 12.sp)
                                     Text(
-                                        text = "Caliente (≥ p70)",
+                                        text = tr("Caliente (≥ p70)", "Hot (≥ p70)"),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -369,7 +370,7 @@ fun StatisticsScreen(
                                 ) {
                                     Text(text = "🧊", fontSize = 12.sp)
                                     Text(
-                                        text = "Frío (≤ p30)",
+                                        text = tr("Frío (≤ p30)", "Cold (≤ p30)"),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -385,7 +386,7 @@ fun StatisticsScreen(
                                             .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape)
                                     )
                                     Text(
-                                        text = "Neutro",
+                                        text = tr("Neutro", "Neutral"),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -426,7 +427,7 @@ fun StatisticsScreen(
                                 onClick = { selectedTab = 0 },
                                 text = {
                                     Text(
-                                        text = "Números Principales (1-${currentGame.maxNumber})",
+                                        text = tr("Números Principales (1-${currentGame.maxNumber})", "Main Numbers (1-${currentGame.maxNumber})"),
                                         fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 12.sp,
                                         color = if (selectedTab == 0) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant
@@ -438,7 +439,7 @@ fun StatisticsScreen(
                                 onClick = { selectedTab = 1 },
                                 text = {
                                     Text(
-                                        text = "${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Estrellas"} (1-${currentGame.secondaryMaxNumber ?: 12})",
+                                        text = tr("${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Estrellas"} (1-${currentGame.secondaryMaxNumber ?: 12})", "${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Stars"} (1-${currentGame.secondaryMaxNumber ?: 12})"),
                                         fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 12.sp,
                                         color = if (selectedTab == 1) currentGame.secondaryDarkColor else MaterialTheme.colorScheme.onSurfaceVariant
@@ -488,7 +489,7 @@ fun StatisticsScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = "Sin Datos Estadísticos",
+                                text = tr("Sin Datos Estadísticos", "No Statistical Data"),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -497,7 +498,7 @@ fun StatisticsScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "Simula sorteos para ver las frecuencias de aparición y los números calientes / fríos para ${currentGame.name}.",
+                                text = tr("Simula sorteos para ver las frecuencias de aparición y los números calientes / fríos para ${currentGame.name}.", "Simulate draws to view appearance frequencies and hot / cold numbers for ${currentGame.name}."),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -520,7 +521,7 @@ fun StatisticsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "🎲 Simular 200 Sorteos",
+                                    text = tr("🎲 Simular 200 Sorteos", "🎲 Simulate 200 Draws"),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
@@ -562,17 +563,17 @@ fun FrequencyCard(
 
     val (badgeText, badgeBg, badgeTextColor) = when (entry.classification) {
         NumberClassification.HOT -> Triple(
-            "🔥 Caliente",
+            tr("🔥 Caliente", "🔥 Hot"),
             if (isStar) gameConfig.secondaryContainerColor else gameConfig.containerColor,
             if (isStar) gameConfig.secondaryOnContainerColor else gameConfig.onContainerColor
         )
         NumberClassification.COLD -> Triple(
-            "🧊 Frío",
+            tr("🧊 Frío", "🧊 Cold"),
             MaterialTheme.colorScheme.surfaceVariant,
             MaterialTheme.colorScheme.onSurfaceVariant
         )
         NumberClassification.NEUTRAL -> Triple(
-            "Neutro",
+            tr("Neutro", "Neutral"),
             MaterialTheme.colorScheme.surfaceVariant,
             MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -615,14 +616,14 @@ fun FrequencyCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Número ${entry.number}",
+                        text = tr("Número ${entry.number}", "Number ${entry.number}"),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
-                        text = "${entry.count} apariciones (${String.format(Locale.getDefault(), "%.1f", entry.percentage)}%)",
+                        text = tr("${entry.count} apariciones (${String.format(Locale.getDefault(), "%.1f", entry.percentage)}%)", "${entry.count} appearances (${String.format(Locale.getDefault(), "%.1f", entry.percentage)}%)"),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

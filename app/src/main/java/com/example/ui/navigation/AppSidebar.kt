@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.GameConfig
 import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandIndigo
+import com.example.ui.theme.tr
 
 @Composable
 fun AppSidebar(
@@ -46,7 +47,9 @@ fun AppSidebar(
     onCloseDrawer: () -> Unit,
     modifier: Modifier = Modifier,
     isDarkMode: Boolean = false,
-    onToggleDarkMode: () -> Unit = {}
+    onToggleDarkMode: () -> Unit = {},
+    locale: String = "es",
+    onToggleLocale: () -> Unit = {}
 ) {
     ModalDrawerSheet(
         modifier = modifier.width(280.dp),
@@ -66,7 +69,7 @@ fun AppSidebar(
                     .padding(horizontal = 20.dp, vertical = 22.dp)
             ) {
                 Text(
-                    text = "🎲 DataLotto Menu",
+                    text = tr("🎲 DataLotto Menu", "🎲 DataLotto Menu"),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -87,7 +90,7 @@ fun AppSidebar(
                     .padding(vertical = 12.dp)
             ) {
                 // Section 1: JUEGOS
-                SidebarSectionHeader(title = "🎮 JUEGOS")
+                SidebarSectionHeader(title = tr("🎮 JUEGOS", "🎮 GAMES"))
 
                 GameConfig.AvailableGames.forEach { game ->
                     val isActive = currentRoute == NavRoutes.GENERATOR && currentGame.id == game.id
@@ -105,12 +108,12 @@ fun AppSidebar(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Section 2: HERRAMIENTAS
-                SidebarSectionHeader(title = "🛠️ HERRAMIENTAS")
+                SidebarSectionHeader(title = tr("🛠️ HERRAMIENTAS", "🛠️ TOOLS"))
 
                 // Functional: Boletos Guardados
                 val isTicketsActive = currentRoute == NavRoutes.SAVED_TICKETS
                 SidebarLinkItem(
-                    text = "📂 Boletos Guardados",
+                    text = tr("📂 Boletos Guardados", "📂 Saved Tickets"),
                     isActive = isTicketsActive,
                     badgeCount = savedTicketsCount,
                     onClick = {
@@ -123,7 +126,7 @@ fun AppSidebar(
                 // Functional: Visualización de Datos / Estadísticas
                 val isStatsActive = currentRoute == NavRoutes.STATISTICS
                 SidebarLinkItem(
-                    text = "📊 Visualización de Datos",
+                    text = tr("📊 Visualización de Datos", "📊 Data Visualization"),
                     isActive = isStatsActive,
                     onClick = {
                         onNavigateToStatistics()
@@ -133,25 +136,31 @@ fun AppSidebar(
                 )
 
                 // Disabled tools
-                DisabledSidebarLinkItem(text = "🧠 Big Data Intelligence")
-                DisabledSidebarLinkItem(text = "🔬 Backtesting Avanzado")
-                DisabledSidebarLinkItem(text = "🧮 Calculadora")
-                DisabledSidebarLinkItem(text = "📅 Sorteos Oficiales")
-                DisabledSidebarLinkItem(text = "📈 Rendimiento de Boletos")
-                DisabledSidebarLinkItem(text = "🔔 Alerta de Botes")
+                DisabledSidebarLinkItem(text = tr("🧠 Big Data Intelligence", "🧠 Big Data Intelligence"))
+                DisabledSidebarLinkItem(text = tr("🔬 Backtesting Avanzado", "🔬 Advanced Backtesting"))
+                DisabledSidebarLinkItem(text = tr("🧮 Calculadora", "🧮 Calculator"))
+                DisabledSidebarLinkItem(text = tr("📅 Sorteos Oficiales", "📅 Official Draws"))
+                DisabledSidebarLinkItem(text = tr("📈 Rendimiento de Boletos", "📈 Ticket Performance"))
+                DisabledSidebarLinkItem(text = tr("🔔 Alerta de Botes", "🔔 Jackpot Alerts"))
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Section 3: CONFIGURACIÓN
-                SidebarSectionHeader(title = "⚙️ CONFIGURACIÓN")
+                SidebarSectionHeader(title = tr("⚙️ CONFIGURACIÓN", "⚙️ SETTINGS"))
 
-                DisabledSidebarLinkItem(text = "🗓️ Recordatorios de Sorteos")
+                DisabledSidebarLinkItem(text = tr("🗓️ Recordatorios de Sorteos", "🗓️ Draw Reminders"))
                 DarkModeToggleItem(
                     isDarkMode = isDarkMode,
                     onToggle = onToggleDarkMode
                 )
-                DisabledSidebarLinkItem(text = "🔗 Enlaces a URLs")
-                DisabledSidebarLinkItem(text = "✉️ Contacto")
+                SidebarLinkItem(
+                    text = if (locale == "en") "🌐 Language (EN)" else "🌐 Idioma (ES)",
+                    isActive = false,
+                    onClick = onToggleLocale,
+                    testTag = "drawer_language_toggle"
+                )
+                DisabledSidebarLinkItem(text = tr("🔗 Enlaces a URLs", "🔗 External Links"))
+                DisabledSidebarLinkItem(text = tr("✉️ Contacto", "✉️ Contact"))
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -253,20 +262,22 @@ private fun DarkModeToggleItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val darkMsg = tr("🌙 Modo oscuro activado", "🌙 Dark mode activated")
+    val lightMsg = tr("☀️ Modo claro activado", "☀️ Light mode activated")
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(46.dp)
             .clickable {
                 onToggle()
-                val message = if (!isDarkMode) "🌙 Modo oscuro activado" else "☀️ Modo claro activado"
+                val message = if (!isDarkMode) darkMsg else lightMsg
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "🌙 Modo Oscuro",
+            text = tr("🌙 Modo Oscuro", "🌙 Dark Mode"),
             color = Color.White.copy(alpha = 0.85f),
             fontWeight = FontWeight.Normal,
             fontSize = 14.sp,

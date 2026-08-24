@@ -23,6 +23,7 @@ data class ExtraColors(
 )
 
 val LocalExtraColors = staticCompositionLocalOf { ExtraColors() }
+val LocalAppLocale = staticCompositionLocalOf { "es" }
 
 private val LightColorScheme = lightColorScheme(
     primary = BrandIndigo,
@@ -72,6 +73,7 @@ private val DarkColorScheme = darkColorScheme(
 fun DataLottoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false, // Set false to maintain consistent DataLotto brand colors
+    locale: String = "es",
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -100,11 +102,13 @@ fun DataLottoTheme(
     }
 
     CompositionLocalProvider(LocalExtraColors provides extraColors) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
+        CompositionLocalProvider(LocalAppLocale provides locale) {
+            MaterialTheme(
+                colorScheme = colorScheme,
+                typography = Typography,
+                content = content
+            )
+        }
     }
 }
 
