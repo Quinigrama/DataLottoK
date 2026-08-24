@@ -74,50 +74,21 @@ object ContractPreferences {
 
         return """
 ================================================================================
-REGISTRO DE ACEPTACIÓN DE CONDICIONES DE USO RESPONSABLE
-DataLotto — Software de Análisis Estadístico y Probabilístico
+REGISTRO DE CONFORMIDAD - DATALOTTO
 ================================================================================
 
-ID de Firma:           $sigId
-Fecha de Aceptación:   $sigDate
-ID de Dispositivo:     $anonId
-Estado:                ACEPTADO Y FIRMADO DIGITALMENTE
-Versión del Acuerdo:   1.0.0
+ID DE REGISTRO:      $sigId
+FECHA Y HORA:        $sigDate
+ESTADO DE REGISTRO:  ACEPTADO Y FIRMADO DIGITALMENTE
+ID DE DISPOSITIVO:   $anonId
 
---------------------------------------------------------------------------------
-TÉRMINOS ACEPTADOS:
---------------------------------------------------------------------------------
-1. Objeto de la Aplicación:
-   DataLotto es un software destinado exclusivamente al entretenimiento,
-   estudio probabilístico, análisis estadístico y visualización de datos
-   históricos de sorteos oficiales de lotería. Bajo ninguna circunstancia
-   este programa constituye un método infalible para asegurar premios
-   financieros o alterar los resultados del azar.
+CLÁUSULAS DE CONFORMIDAD Y EXENCIÓN DE RESPONSABILIDAD ACEPTADAS:
+1. El usuario reconoce expresamente que DataLotto es una herramienta de análisis estadístico y entretenimiento.
+2. El usuario comprende y acepta que los juegos de azar son impredecibles y que ninguna estrategia o análisis garantiza premios.
+3. El usuario asume toda la responsabilidad sobre el uso de los datos y cualquier decisión económica o de juego.
+4. El usuario declara ser mayor de edad legal para participar en juegos de azar en su jurisdicción.
+5. El usuario se compromete a realizar un juego responsable y conoce los riesgos asociados a la ludopatía.
 
-2. Advertencia sobre el Juego y Prevención de la Ludopatía:
-   - Esta aplicación NO FOMENTA el juego ni la realización de apuestas reales.
-   - No garantizamos ganancias ni rentabilidad económica alguna. Ninguna de
-     las funciones de análisis estadístico (Optimización de Filtros, sistemas
-     múltiples, sistemas reducidos, regresión lineal o análisis de frecuencia)
-     incrementa la probabilidad matemática de ganar frente al azar del bombo real.
-   - El juego compulsivo o patológico (ludopatía) es una enfermedad seria.
-     Juega siempre con moderación, de forma recreativa, y solo con dinero
-     que puedas permitirte perder íntegramente.
-
-3. Exoneración de Responsabilidad Legal:
-   El usuario asume el 100% de la responsabilidad derivada de las decisiones
-   de compra o apuestas que realice de forma externa en administraciones
-   oficiales de lotería. Los creadores y desarrolladores de DataLotto quedan
-   eximidos por completo de cualquier reclamación legal o indemnización por
-   pérdidas financieras directas o indirectas derivadas del uso de esta herramienta.
-
-4. Declaración de Cumplimiento Normativo:
-   Al aceptar este acuerdo, declaras ser mayor de edad en tu jurisdicción
-   correspondiente y utilizar el software exclusivamente como una herramienta
-   educativa y de entretenimiento.
-
-================================================================================
-Línea de ayuda contra la ludopatía (España): 900 200 225 (FEJAR / Gratuito)
 ================================================================================
 """.trimIndent()
     }
