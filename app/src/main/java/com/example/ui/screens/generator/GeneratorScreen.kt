@@ -89,7 +89,8 @@ fun GeneratorScreen(
     viewModel: LotteryViewModel,
     onNavigateToSavedTickets: () -> Unit,
     modifier: Modifier = Modifier,
-    onOpenDrawer: () -> Unit = {}
+    onOpenDrawer: () -> Unit = {},
+    onNavigateToEthicsDisclaimer: () -> Unit = {}
 ) {
     val currentGame by viewModel.currentGame.collectAsStateWithLifecycle()
     val strategy by viewModel.strategy.collectAsStateWithLifecycle()
@@ -228,6 +229,16 @@ fun GeneratorScreen(
                         }
                     },
                     actions = {
+                        IconButton(
+                            onClick = onNavigateToEthicsDisclaimer,
+                            modifier = Modifier.testTag("ethics_disclaimer_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Disclaimer Ético",
+                                tint = BrandWarning
+                            )
+                        }
                         IconButton(
                             onClick = onNavigateToSavedTickets,
                             modifier = Modifier.testTag("nav_to_tickets_button")
