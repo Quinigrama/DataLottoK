@@ -2,6 +2,7 @@ package com.example.ui.screens.generator
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -33,6 +35,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
+import com.example.logic.MultipleTicketCalculator
 import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDanger
@@ -75,6 +80,7 @@ import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
 import com.example.ui.viewmodel.LotteryViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -85,6 +91,9 @@ fun GeneratorScreen(
     onOpenDrawer: () -> Unit = {}
 ) {
     val currentGame by viewModel.currentGame.collectAsStateWithLifecycle()
+    val strategy by viewModel.strategy.collectAsStateWithLifecycle()
+    val multipleNumberCount by viewModel.multipleNumberCount.collectAsStateWithLifecycle()
+    val multipleSecondaryCount by viewModel.multipleSecondaryCount.collectAsStateWithLifecycle()
     val selectedNumbers by viewModel.selectedNumbers.collectAsStateWithLifecycle()
     val selectedSecondaryNumbers by viewModel.selectedSecondaryNumbers.collectAsStateWithLifecycle()
     val savedTickets by viewModel.savedTickets.collectAsStateWithLifecycle()
@@ -99,10 +108,37 @@ fun GeneratorScreen(
         }
     }
 
-    val isPrimaryComplete = selectedNumbers.size == currentGame.pickCount
-    val isSecondaryComplete = !currentGame.hasSecondaryMatrix ||
+    val multipleOptions = remember(currentGame) {
+        MultipleTicketCalculator.getOptions(currentGame)
+    }
+
+    val (liveBets, liveCost, liveError) = remember(currentGame, strategy, multipleNumberCount, multipleSecondaryCount) {
+        if (strategy == "multiple") {
+            try {
+                val bets = MultipleTicketCalculator.calculateTotalBets(currentGame, multipleNumberCount, multipleSecondaryCount)
+                val cost = MultipleTicketCalculator.calculateTotalCost(currentGame, multipleNumberCount, multipleSecondaryCount)
+                Triple(bets, cost, null)
+            } catch (e: Exception) {
+                Triple(0, 0.0, e.message)
+            }
+        } else {
+            Triple(1, currentGame.costPerBet, null)
+        }
+    }
+
+    val isSimplePrimaryComplete = selectedNumbers.size == currentGame.pickCount
+    val isSimpleSecondaryComplete = !currentGame.hasSecondaryMatrix ||
             (selectedSecondaryNumbers.size == currentGame.secondaryPickCount)
-    val isComplete = isPrimaryComplete && isSecondaryComplete
+
+    val isMultiplePrimaryComplete = selectedNumbers.size == multipleNumberCount
+    val isMultipleSecondaryComplete = !currentGame.hasSecondaryMatrix ||
+            (selectedSecondaryNumbers.size == multipleSecondaryCount)
+
+    val isComplete = if (strategy == "multiple") {
+        isMultiplePrimaryComplete && isMultipleSecondaryComplete
+    } else {
+        isSimplePrimaryComplete && isSimpleSecondaryComplete
+    }
 
     val sortedSelected = selectedNumbers.toList().sorted()
     val sortedSecondary = selectedSecondaryNumbers.toList().sorted()
@@ -221,7 +257,7 @@ fun GeneratorScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .widthIn(max = 540.dp)
-                        .padding(top = 10.dp, bottom = 8.dp),
+                        .padding(top = 10.dp, bottom = 6.dp),
                     shape = RoundedCornerShape(14.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(
@@ -263,6 +299,63 @@ fun GeneratorScreen(
                     }
                 }
 
+                // Strategy Selector ("🎲 Simple" / "🎯 Múltiple")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 540.dp)
+                        .padding(bottom = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        val isSimple = strategy == "simple"
+                        val isMultiple = strategy == "multiple"
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSimple) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
+                                .clickable { viewModel.setStrategy("simple") }
+                                .padding(vertical = 8.dp)
+                                .testTag("strategy_simple_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎲 Simple",
+                                fontWeight = if (isSimple) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSimple) gamePrimaryColor else Color(0xFF64748B),
+                                fontSize = 13.5.sp
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isMultiple) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
+                                .clickable { viewModel.setStrategy("multiple") }
+                                .padding(vertical = 8.dp)
+                                .testTag("strategy_multiple_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎯 Múltiple",
+                                fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isMultiple) gamePrimaryColor else Color(0xFF64748B),
+                                fontSize = 13.5.sp
+                            )
+                        }
+                    }
+                }
+
                 // Scrollable Content: Summary Card + Primary Matrix + Secondary Matrix
                 LazyColumn(
                     modifier = Modifier
@@ -271,6 +364,157 @@ fun GeneratorScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // Multiple Configuration Card (only in multiple strategy)
+                    if (strategy == "multiple") {
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                                    .testTag("multiple_config_card"),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = "Configuración de Apuesta Múltiple",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandDark
+                                    )
+
+                                    // Primary count selector
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(
+                                            text = if (currentGame.hasSecondaryMatrix) "Cantidad de números principales:" else "Cantidad de números a combinar:",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF475569)
+                                        )
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            multipleOptions.numberChoices.forEach { count ->
+                                                val isSelected = multipleNumberCount == count
+                                                FilterChip(
+                                                    selected = isSelected,
+                                                    onClick = { viewModel.setMultipleNumberCount(count) },
+                                                    label = {
+                                                        Text(
+                                                            text = "$count números",
+                                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                            fontSize = 12.sp
+                                                        )
+                                                    },
+                                                    colors = FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = currentGame.containerColor,
+                                                        selectedLabelColor = currentGame.onContainerColor
+                                                    ),
+                                                    modifier = Modifier.testTag("multiple_chip_$count")
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Secondary count selector (Euromillones)
+                                    if (currentGame.hasSecondaryMatrix && multipleOptions.secondaryChoices.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text(
+                                                text = "Cantidad de ${currentGame.secondaryName?.lowercase() ?: "estrellas"}:",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color(0xFF475569)
+                                            )
+                                            FlowRow(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                multipleOptions.secondaryChoices.forEach { secCount ->
+                                                    val isSelected = multipleSecondaryCount == secCount
+                                                    FilterChip(
+                                                        selected = isSelected,
+                                                        onClick = { viewModel.setMultipleSecondaryCount(secCount) },
+                                                        label = {
+                                                            Text(
+                                                                text = "$secCount ${currentGame.secondaryEmoji ?: "⭐"}",
+                                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                                fontSize = 12.sp
+                                                            )
+                                                        },
+                                                        colors = FilterChipDefaults.filterChipColors(
+                                                            selectedContainerColor = currentGame.secondaryContainerColor,
+                                                            selectedLabelColor = currentGame.secondaryOnContainerColor
+                                                        ),
+                                                        modifier = Modifier.testTag("multiple_star_chip_$secCount")
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(color = Color(0xFFF1F5F9))
+
+                                    // Informative Live Bets and Cost Badge
+                                    if (liveError != null) {
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = CardDefaults.cardColors(containerColor = BrandDanger.copy(alpha = 0.12f)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(10.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Warning,
+                                                    contentDescription = null,
+                                                    tint = BrandDanger,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = liveError,
+                                                    color = BrandDanger,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Combinaciones cubiertas:",
+                                                fontSize = 12.5.sp,
+                                                color = Color(0xFF64748B),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            Text(
+                                                text = "$liveBets apuestas · ${String.format(Locale.getDefault(), "%.2f", liveCost)} €",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandDark
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Header summary card (Selection status & Live preview of chosen balls)
                     item {
                         Card(
@@ -292,20 +536,38 @@ fun GeneratorScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    if (currentGame.hasSecondaryMatrix) {
-                                        Text(
-                                            text = "${selectedNumbers.size}/${currentGame.pickCount} núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = if (isComplete) gamePrimaryColor else BrandDark
-                                        )
+                                    if (strategy == "multiple") {
+                                        if (currentGame.hasSecondaryMatrix) {
+                                            Text(
+                                                text = "${selectedNumbers.size}/$multipleNumberCount núm. • ${selectedSecondaryNumbers.size}/$multipleSecondaryCount ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "${selectedNumbers.size}/$multipleNumberCount números seleccionados",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        }
                                     } else {
-                                        Text(
-                                            text = "${selectedNumbers.size}/${currentGame.pickCount} números seleccionados",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = if (isComplete) gamePrimaryColor else BrandDark
-                                        )
+                                        if (currentGame.hasSecondaryMatrix) {
+                                            Text(
+                                                text = "${selectedNumbers.size}/${currentGame.pickCount} núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "${selectedNumbers.size}/${currentGame.pickCount} números seleccionados",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        }
                                     }
 
                                     if (isComplete) {
@@ -331,7 +593,9 @@ fun GeneratorScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                val totalPick = currentGame.pickCount + if (currentGame.hasSecondaryMatrix) currentGame.secondaryPickCount else 0
+                                val targetPrimaryCount = if (strategy == "multiple") multipleNumberCount else currentGame.pickCount
+                                val targetSecondaryCount = if (strategy == "multiple") multipleSecondaryCount else (if (currentGame.hasSecondaryMatrix) currentGame.secondaryPickCount else 0)
+                                val totalPick = targetPrimaryCount + targetSecondaryCount
                                 val totalSelected = selectedNumbers.size + if (currentGame.hasSecondaryMatrix) selectedSecondaryNumbers.size else 0
 
                                 LinearProgressIndicator(
@@ -346,98 +610,149 @@ fun GeneratorScreen(
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                // Balls row placeholder / active numbers
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Primary balls preview
-                                    for (i in 0 until currentGame.pickCount) {
-                                        if (i < sortedSelected.size) {
-                                            LotteryBall(
-                                                number = sortedSelected[i],
-                                                isSelected = true,
-                                                size = 36.dp,
-                                                primaryColor = currentGame.primaryColor,
-                                                darkColor = currentGame.darkColor,
-                                                glowColor = currentGame.glowColor,
-                                                onClick = { viewModel.toggleNumber(sortedSelected[i]) }
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(36.dp)
-                                                    .background(
-                                                        Color(0xFFF1F5F9),
-                                                        CircleShape
-                                                    )
-                                                    .clip(CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = "-",
-                                                    color = Color(0xFF94A3B8),
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                    }
-
-                                    // Secondary balls preview
-                                    if (currentGame.hasSecondaryMatrix) {
+                                // Balls preview
+                                if (strategy == "multiple") {
+                                    if (selectedNumbers.isEmpty()) {
                                         Text(
-                                            text = "+",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp,
-                                            color = currentGame.secondaryPrimaryColor,
-                                            modifier = Modifier.padding(horizontal = 4.dp)
+                                            text = "Pulsa \"🎯 Generar Múltiple\" para generar los $multipleNumberCount números al azar",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF64748B),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                            modifier = Modifier.padding(vertical = 6.dp)
                                         )
-
-                                        for (i in 0 until currentGame.secondaryPickCount) {
-                                            if (i < sortedSecondary.size) {
+                                    } else {
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            sortedSelected.forEach { num ->
                                                 LotteryBall(
-                                                    number = sortedSecondary[i],
+                                                    number = num,
                                                     isSelected = true,
                                                     size = 36.dp,
-                                                    isStar = true,
-                                                    primaryColor = currentGame.secondaryPrimaryColor,
-                                                    darkColor = currentGame.secondaryDarkColor,
-                                                    glowColor = currentGame.secondaryGlowColor,
-                                                    onClick = { viewModel.toggleSecondaryNumber(sortedSecondary[i]) }
+                                                    primaryColor = currentGame.primaryColor,
+                                                    darkColor = currentGame.darkColor,
+                                                    glowColor = currentGame.glowColor
+                                                )
+                                            }
+
+                                            if (currentGame.hasSecondaryMatrix && sortedSecondary.isNotEmpty()) {
+                                                Text(
+                                                    text = "+",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 18.sp,
+                                                    color = currentGame.secondaryPrimaryColor,
+                                                    modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 2.dp)
+                                                )
+                                                sortedSecondary.forEach { secNum ->
+                                                    LotteryBall(
+                                                        number = secNum,
+                                                        isSelected = true,
+                                                        size = 36.dp,
+                                                        isStar = true,
+                                                        primaryColor = currentGame.secondaryPrimaryColor,
+                                                        darkColor = currentGame.secondaryDarkColor,
+                                                        glowColor = currentGame.secondaryGlowColor
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Balls row placeholder / active numbers for Simple Mode
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Primary balls preview
+                                        for (i in 0 until currentGame.pickCount) {
+                                            if (i < sortedSelected.size) {
+                                                LotteryBall(
+                                                    number = sortedSelected[i],
+                                                    isSelected = true,
+                                                    size = 36.dp,
+                                                    primaryColor = currentGame.primaryColor,
+                                                    darkColor = currentGame.darkColor,
+                                                    glowColor = currentGame.glowColor,
+                                                    onClick = { viewModel.toggleNumber(sortedSelected[i]) }
                                                 )
                                             } else {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(36.dp)
-                                                    .background(
-                                                        currentGame.secondaryContainerColor.copy(alpha = 0.5f),
-                                                        RoundedCornerShape(8.dp)
+                                                        .background(
+                                                            Color(0xFFF1F5F9),
+                                                            CircleShape
+                                                        )
+                                                        .clip(CircleShape),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = "-",
+                                                        color = Color(0xFF94A3B8),
+                                                        fontWeight = FontWeight.Bold
                                                     )
-                                                    .clip(RoundedCornerShape(8.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Star,
-                                                    contentDescription = null,
-                                                    tint = currentGame.secondaryOnContainerColor.copy(alpha = 0.4f),
-                                                    modifier = Modifier.size(16.dp)
-                                                )
+                                                }
                                             }
-                                        }
-                                        if (i < currentGame.secondaryPickCount - 1) {
                                             Spacer(modifier = Modifier.width(6.dp))
+                                        }
+
+                                        // Secondary balls preview
+                                        if (currentGame.hasSecondaryMatrix) {
+                                            Text(
+                                                text = "+",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 18.sp,
+                                                color = currentGame.secondaryPrimaryColor,
+                                                modifier = Modifier.padding(horizontal = 4.dp)
+                                            )
+
+                                            for (i in 0 until currentGame.secondaryPickCount) {
+                                                if (i < sortedSecondary.size) {
+                                                    LotteryBall(
+                                                        number = sortedSecondary[i],
+                                                        isSelected = true,
+                                                        size = 36.dp,
+                                                        isStar = true,
+                                                        primaryColor = currentGame.secondaryPrimaryColor,
+                                                        darkColor = currentGame.secondaryDarkColor,
+                                                        glowColor = currentGame.secondaryGlowColor,
+                                                        onClick = { viewModel.toggleSecondaryNumber(sortedSecondary[i]) }
+                                                    )
+                                                } else {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(36.dp)
+                                                            .background(
+                                                                currentGame.secondaryContainerColor.copy(alpha = 0.5f),
+                                                                RoundedCornerShape(8.dp)
+                                                            )
+                                                            .clip(RoundedCornerShape(8.dp)),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Star,
+                                                            contentDescription = null,
+                                                            tint = currentGame.secondaryOnContainerColor.copy(alpha = 0.4f),
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                    }
+                                                }
+                                                if (i < currentGame.secondaryPickCount - 1) {
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    } // closes Card
-                } // closes item for Header Summary Card
+                    }
 
-                // Real-time Combination Quality Card (shown when at least 1 number is selected)
-                if (selectedNumbers.isNotEmpty()) {
+                // Real-time Combination Quality Card (only shown in SIMPLE strategy when at least 1 number is selected)
+                if (strategy == "simple" && selectedNumbers.isNotEmpty()) {
                     item {
                             val scoreColor = when {
                                 qualityScore >= 80 -> BrandSuccess
@@ -532,230 +847,233 @@ fun GeneratorScreen(
                         }
                     }
 
-                    // Primary Numbers Grid Card
-                    item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)
-                        ) {
-                            Row(
+                    // Primary Numbers Grid Card (only in Simple Strategy)
+                    if (strategy == "simple") {
+                        item {
+                            Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = if (currentGame.hasSecondaryMatrix) "Números principales (1-${currentGame.maxNumber})" else "Números (1-${currentGame.maxNumber})",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandDark
+                                    .padding(vertical = 2.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White
                                 )
-                                Text(
-                                    text = "${selectedNumbers.size}/${currentGame.pickCount}",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isPrimaryComplete) gamePrimaryColor else Color(0xFF64748B)
-                                )
-                            }
-
-                            val numbers = (currentGame.minNumber..currentGame.maxNumber).toList()
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                numbers.forEach { num ->
-                                    LotteryBall(
-                                        number = num,
-                                        isSelected = selectedNumbers.contains(num),
-                                        size = 41.dp,
-                                        primaryColor = currentGame.primaryColor,
-                                        darkColor = currentGame.darkColor,
-                                        glowColor = currentGame.glowColor,
-                                        onClick = { viewModel.toggleNumber(num) }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Secondary Matrix (Stars) when applicable
-                val secMin = currentGame.secondaryMinNumber
-                val secMax = currentGame.secondaryMaxNumber
-                if (currentGame.hasSecondaryMatrix && secMin != null && secMax != null) {
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp, bottom = 2.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = currentGame.secondaryContainerColor.copy(alpha = 0.45f)
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp)
                                 ) {
                                     Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Estrellas"} ($secMin-$secMax)",
-                                            style = MaterialTheme.typography.titleSmall,
+                                            text = if (currentGame.hasSecondaryMatrix) "Números principales (1-${currentGame.maxNumber})" else "Números (1-${currentGame.maxNumber})",
+                                            style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.Bold,
-                                            color = currentGame.secondaryOnContainerColor
+                                            color = BrandDark
+                                        )
+                                        Text(
+                                            text = "${selectedNumbers.size}/${currentGame.pickCount}",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSimplePrimaryComplete) gamePrimaryColor else Color(0xFF64748B)
                                         )
                                     }
 
-                                    Text(
-                                        text = "${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount}",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSecondaryComplete) currentGame.secondaryDarkColor else Color(0xFF64748B)
-                                    )
+                                    val numbers = (currentGame.minNumber..currentGame.maxNumber).toList()
+                                    FlowRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        numbers.forEach { num ->
+                                            LotteryBall(
+                                                number = num,
+                                                isSelected = selectedNumbers.contains(num),
+                                                size = 41.dp,
+                                                primaryColor = currentGame.primaryColor,
+                                                darkColor = currentGame.darkColor,
+                                                glowColor = currentGame.glowColor,
+                                                onClick = { viewModel.toggleNumber(num) }
+                                            )
+                                        }
+                                    }
                                 }
+                            }
+                        }
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                val secondaryNums = (secMin..secMax).toList()
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                        // Secondary Matrix (Stars) when applicable
+                        val secMin = currentGame.secondaryMinNumber
+                        val secMax = currentGame.secondaryMaxNumber
+                        if (currentGame.hasSecondaryMatrix && secMin != null && secMax != null) {
+                            item {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp, bottom = 2.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = currentGame.secondaryContainerColor.copy(alpha = 0.45f)
+                                    )
                                 ) {
-                                    secondaryNums.forEach { secNum ->
-                                        LotteryBall(
-                                            number = secNum,
-                                            isSelected = selectedSecondaryNumbers.contains(secNum),
-                                            size = 40.dp,
-                                            isStar = true,
-                                            primaryColor = currentGame.secondaryPrimaryColor,
-                                            darkColor = currentGame.secondaryDarkColor,
-                                            glowColor = currentGame.secondaryGlowColor,
-                                            onClick = { viewModel.toggleSecondaryNumber(secNum) }
-                                        )
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = "${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Estrellas"} ($secMin-$secMax)",
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = currentGame.secondaryOnContainerColor
+                                                )
+                                            }
+
+                                            Text(
+                                                text = "${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isSimpleSecondaryComplete) currentGame.secondaryDarkColor else Color(0xFF64748B)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        val secondaryNums = (secMin..secMax).toList()
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            secondaryNums.forEach { secNum ->
+                                                LotteryBall(
+                                                    number = secNum,
+                                                    isSelected = selectedSecondaryNumbers.contains(secNum),
+                                                    size = 40.dp,
+                                                    isStar = true,
+                                                    primaryColor = currentGame.secondaryPrimaryColor,
+                                                    darkColor = currentGame.secondaryDarkColor,
+                                                    glowColor = currentGame.secondaryGlowColor,
+                                                    onClick = { viewModel.toggleSecondaryNumber(secNum) }
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
-            }
-
-            // Action Buttons Panel in solid white card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 540.dp)
-                    .padding(vertical = 10.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Generar Combinación Button
-                        Button(
-                            onClick = { viewModel.generateCombination() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
-                                .testTag("generate_button"),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = gamePrimaryColor
-                            )
-                        ) {
-                            Text(
-                                text = "🍀 Generar Combinación",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        }
-
-                        // Limpiar Button
-                        OutlinedButton(
-                            onClick = { viewModel.clearSelection() },
-                            modifier = Modifier
-                                .height(48.dp)
-                                .testTag("clear_button"),
-                            shape = RoundedCornerShape(12.dp),
-                            enabled = selectedNumbers.isNotEmpty() || selectedSecondaryNumbers.isNotEmpty()
-                        ) {
-                            Text(
-                                text = "🗑️ Limpiar",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
-                            )
-                        }
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
+                }
 
-                    // Guardar Boleto Button
-                    Button(
-                        onClick = { viewModel.saveCurrentTicket() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .testTag("save_ticket_button"),
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = isComplete,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = gamePrimaryColor,
-                            disabledContainerColor = Color(0xFFF1F5F9)
-                        )
+                // Action Buttons Panel in solid white card
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 540.dp)
+                        .padding(vertical = 10.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "💾 Guardar Boleto (${currentGame.name})",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = if (isComplete) Color.White else Color(0xFF94A3B8)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Generar Combinación Button
+                            Button(
+                                onClick = { viewModel.generateCombination() },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                                    .testTag("generate_button"),
+                                enabled = liveError == null,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = gamePrimaryColor
+                                )
+                            ) {
+                                Text(
+                                    text = if (strategy == "multiple") "🎯 Generar Múltiple" else "🍀 Generar Combinación",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+                            // Limpiar Button
+                            OutlinedButton(
+                                onClick = { viewModel.clearSelection() },
+                                modifier = Modifier
+                                    .height(48.dp)
+                                    .testTag("clear_button"),
+                                shape = RoundedCornerShape(12.dp),
+                                enabled = selectedNumbers.isNotEmpty() || selectedSecondaryNumbers.isNotEmpty()
+                            ) {
+                                Text(
+                                    text = "🗑️ Limpiar",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+
+                        // Guardar Boleto Button
+                        Button(
+                            onClick = { viewModel.saveCurrentTicket() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .testTag("save_ticket_button"),
+                            shape = RoundedCornerShape(12.dp),
+                            enabled = isComplete && liveError == null,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = gamePrimaryColor,
+                                disabledContainerColor = Color(0xFFF1F5F9)
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (strategy == "multiple") "💾 Guardar Boleto Múltiple (${currentGame.name})" else "💾 Guardar Boleto (${currentGame.name})",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = if (isComplete && liveError == null) Color.White else Color(0xFF94A3B8)
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }
 
 

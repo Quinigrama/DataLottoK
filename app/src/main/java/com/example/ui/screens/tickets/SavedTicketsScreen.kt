@@ -312,6 +312,7 @@ fun SavedTicketsScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TicketCard(
     ticket: SavedTicket,
@@ -371,6 +372,24 @@ fun TicketCard(
                         )
                     }
 
+                    if (ticket.strategy == "multiple") {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    BrandIndigo.copy(alpha = 0.12f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = if (ticket.secondaryNumbers.isNotEmpty()) "🎯 Múltiple de ${ticket.numbers.size}+${ticket.secondaryNumbers.size}⭐" else "🎯 Múltiple de ${ticket.numbers.size}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandIndigo
+                            )
+                        }
+                    }
+
                     Text(
                         text = formattedDate,
                         style = MaterialTheme.typography.bodySmall,
@@ -396,24 +415,21 @@ fun TicketCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Balls representation with game specific colors
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 val sortedNumbers = ticket.numbers.sorted()
-                sortedNumbers.forEachIndexed { index, num ->
+                sortedNumbers.forEach { num ->
                     LotteryBall(
                         number = num,
                         isSelected = true,
-                        size = if (ticket.secondaryNumbers.isNotEmpty()) 36.dp else 40.dp,
+                        size = if (sortedNumbers.size > 7 || ticket.secondaryNumbers.isNotEmpty()) 34.dp else 38.dp,
                         primaryColor = gameConfig.primaryColor,
                         darkColor = gameConfig.darkColor,
                         glowColor = gameConfig.glowColor
                     )
-                    if (index < sortedNumbers.size - 1) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
                 }
 
                 if (ticket.secondaryNumbers.isNotEmpty()) {
@@ -422,23 +438,20 @@ fun TicketCard(
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = gameConfig.secondaryPrimaryColor,
-                        modifier = Modifier.padding(horizontal = 6.dp)
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 4.dp)
                     )
 
                     val sortedSecondary = ticket.secondaryNumbers.sorted()
-                    sortedSecondary.forEachIndexed { index, secNum ->
+                    sortedSecondary.forEach { secNum ->
                         LotteryBall(
                             number = secNum,
                             isSelected = true,
-                            size = 36.dp,
+                            size = 34.dp,
                             isStar = true,
                             primaryColor = gameConfig.secondaryPrimaryColor,
                             darkColor = gameConfig.secondaryDarkColor,
                             glowColor = gameConfig.secondaryGlowColor
                         )
-                        if (index < sortedSecondary.size - 1) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                        }
                     }
                 }
             }
@@ -448,96 +461,112 @@ fun TicketCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Validation status and Action
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (ticket.isValidated) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    if (isWinning) BrandSuccess.copy(alpha = 0.15f) else Color(0xFFF1F5F9),
-                                    RoundedCornerShape(6.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+            if (ticket.strategy == "multiple") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "ℹ️ La validación de boletos múltiples llegará en una fase posterior",
+                        fontSize = 11.5.sp,
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 15.sp
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (ticket.isValidated) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        if (isWinning) BrandSuccess.copy(alpha = 0.15f) else Color(0xFFF1F5F9),
+                                        RoundedCornerShape(6.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Icon(
-                                    imageVector = if (isWinning) Icons.Default.EmojiEvents else Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = if (isWinning) BrandSuccess else Color(0xFF64748B),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = "✓ Validado",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isWinning) BrandSuccess else Color(0xFF64748B)
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (isWinning) Icons.Default.EmojiEvents else Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "✓ Validado",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isWinning) BrandSuccess else Color(0xFF64748B)
+                                    )
+                                }
                             }
+
+                            Text(
+                                text = ticket.prizeLabel ?: "Sin premio",
+                                fontSize = 12.sp,
+                                fontWeight = if (isWinning) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                                maxLines = 1
+                            )
                         }
 
+                        // Re-validar button
+                        IconButton(
+                            onClick = onValidate,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("revalidate_ticket_${ticket.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Re-validar",
+                                tint = BrandIndigo,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    } else {
                         Text(
-                            text = ticket.prizeLabel ?: "Sin premio",
+                            text = "Pendiente de validación",
                             fontSize = 12.sp,
-                            fontWeight = if (isWinning) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isWinning) BrandSuccess else Color(0xFF64748B),
-                            maxLines = 1
+                            color = Color(0xFF94A3B8)
                         )
-                    }
 
-                    // Re-validar button
-                    IconButton(
-                        onClick = onValidate,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .testTag("revalidate_ticket_${ticket.id}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Re-validar",
-                            tint = BrandIndigo,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                } else {
-                    Text(
-                        text = "Pendiente de validación",
-                        fontSize = 12.sp,
-                        color = Color(0xFF94A3B8)
-                    )
-
-                    Button(
-                        onClick = onValidate,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandIndigo
-                        ),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        modifier = Modifier
-                            .testTag("validate_ticket_${ticket.id}")
-                            .height(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Validar",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Button(
+                            onClick = onValidate,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandIndigo
+                            ),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            modifier = Modifier
+                                .testTag("validate_ticket_${ticket.id}")
+                                .height(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Validar",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

@@ -7,6 +7,7 @@ import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
 import com.example.data.repository.TicketRepository
 import com.example.logic.LotteryGenerator
+import com.example.logic.MultipleTicketCalculator
 import com.example.logic.PrizeCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +22,24 @@ class LotteryViewModel(
 
     private val _currentGame = MutableStateFlow(GameConfig.Bonoloto)
     val currentGame: StateFlow<GameConfig> = _currentGame.asStateFlow()
+
+    // Estrategia de juego: "simple" o "multiple"
+    private val _strategy = MutableStateFlow("simple")
+    val strategy: StateFlow<String> = _strategy.asStateFlow()
+
+    // Opciones para apuesta múltiple
+    private val initialMultipleOptions = MultipleTicketCalculator.getOptions(GameConfig.Bonoloto)
+    private val _multipleNumberCount = MutableStateFlow(initialMultipleOptions.defaultNumber)
+    val multipleNumberCount: StateFlow<Int> = _multipleNumberCount.asStateFlow()
+
+    private val _multipleSecondaryCount = MutableStateFlow(initialMultipleOptions.defaultSecondary)
+    val multipleSecondaryCount: StateFlow<Int> = _multipleSecondaryCount.asStateFlow()
+
+    private val _multipleBets = MutableStateFlow(0)
+    val multipleBets: StateFlow<Int> = _multipleBets.asStateFlow()
+
+    private val _multipleCost = MutableStateFlow(0.0)
+    val multipleCost: StateFlow<Double> = _multipleCost.asStateFlow()
 
     private val _selectedNumbers = MutableStateFlow<Set<Int>>(emptySet())
     val selectedNumbers: StateFlow<Set<Int>> = _selectedNumbers.asStateFlow()
@@ -55,6 +74,18 @@ class LotteryViewModel(
     private val _simulatedDraws = MutableStateFlow<List<com.example.logic.SimulatedDraw>>(emptyList())
     val simulatedDraws: StateFlow<List<com.example.logic.SimulatedDraw>> = _simulatedDraws.asStateFlow()
 
+    fun setStrategy(value: String) {
+        _strategy.value = value
+    }
+
+    fun setMultipleNumberCount(n: Int) {
+        _multipleNumberCount.value = n
+    }
+
+    fun setMultipleSecondaryCount(n: Int) {
+        _multipleSecondaryCount.value = n
+    }
+
     fun simulateDraws(count: Int = 200) {
         val game = _currentGame.value
         val draws = com.example.logic.StatisticsEngine.generateSimulatedDraws(game, count)
@@ -68,6 +99,12 @@ class LotteryViewModel(
             _selectedNumbers.value = emptySet()
             _selectedSecondaryNumbers.value = emptySet()
             _simulatedDraws.value = emptyList()
+            _strategy.value = "simple"
+            val options = MultipleTicketCalculator.getOptions(game)
+            _multipleNumberCount.value = options.defaultNumber
+            _multipleSecondaryCount.value = options.defaultSecondary
+            _multipleBets.value = 0
+            _multipleCost.value = 0.0
             _userFeedback.value = "Cambiado a ${game.name}"
         }
     }
@@ -118,6 +155,25 @@ class LotteryViewModel(
         _userFeedback.value = "🍀 Combinación generada para ${game.name}"
     }
 
+    fun generateMultipleCombination() {
+        val game = _currentGame.value
+        try {
+            val result = MultipleTicketCalculator.generate(
+                game = game,
+                numberCount = _multipleNumberCount.value,
+                secondaryCount = _multipleSecondaryCount.value
+            )
+            _selectedNumbers.value = result.numbers.toSet()
+            _selectedSecondaryNumbers.value = result.secondaryNumbers.toSet()
+            _multipleBets.value = result.totalBets
+            _multipleCost.value = result.totalCost
+            val costFormatted = String.format(java.util.Locale.getDefault(), "%.2f", result.totalCost)
+            _userFeedback.value = "🎯 Apuesta múltiple generada (${result.totalBets} apuestas · $costFormatted €)"
+        } catch (e: Exception) {
+            _userFeedback.value = e.message ?: "Error al generar la combinación múltiple"
+        }
+    }
+
     fun clearSelection() {
         _selectedNumbers.value = emptySet()
         _selectedSecondaryNumbers.value = emptySet()
@@ -127,16 +183,33 @@ class LotteryViewModel(
         val game = _currentGame.value
         val numbers = _selectedNumbers.value.toList().sorted()
         val secondaryNumbers = _selectedSecondaryNumbers.value.toList().sorted()
+        val currentStrategy = _strategy.value
 
-        if (numbers.size != game.pickCount) {
-            _userFeedback.value = "Debes seleccionar exactamente ${game.pickCount} números para guardar el boleto"
-            return
-        }
+        if (currentStrategy == "multiple") {
+            val requiredCount = _multipleNumberCount.value
+            if (numbers.size != requiredCount) {
+                _userFeedback.value = "Debes generar una combinación múltiple de $requiredCount números para guardar el boleto"
+                return
+            }
+            if (game.hasSecondaryMatrix) {
+                val requiredSec = _multipleSecondaryCount.value
+                if (secondaryNumbers.size != requiredSec) {
+                    val name = game.secondaryName ?: "estrellas"
+                    _userFeedback.value = "Debes generar exactamente $requiredSec $name para guardar el boleto"
+                    return
+                }
+            }
+        } else {
+            if (numbers.size != game.pickCount) {
+                _userFeedback.value = "Debes seleccionar exactamente ${game.pickCount} números para guardar el boleto"
+                return
+            }
 
-        if (game.hasSecondaryMatrix && secondaryNumbers.size != game.secondaryPickCount) {
-            val name = game.secondaryName ?: "estrellas"
-            _userFeedback.value = "Debes seleccionar exactamente ${game.secondaryPickCount} $name para guardar el boleto"
-            return
+            if (game.hasSecondaryMatrix && secondaryNumbers.size != game.secondaryPickCount) {
+                val name = game.secondaryName ?: "estrellas"
+                _userFeedback.value = "Debes seleccionar exactamente ${game.secondaryPickCount} $name para guardar el boleto"
+                return
+            }
         }
 
         viewModelScope.launch {
@@ -145,6 +218,7 @@ class LotteryViewModel(
                 gameName = game.name,
                 numbers = numbers,
                 secondaryNumbers = if (game.hasSecondaryMatrix) secondaryNumbers else emptyList(),
+                strategy = currentStrategy,
                 timestamp = System.currentTimeMillis()
             )
             repository.saveTicket(ticket)

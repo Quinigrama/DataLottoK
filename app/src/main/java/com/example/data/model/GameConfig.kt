@@ -32,7 +32,8 @@ data class GameConfig(
     val secondaryContainerColor: Color = Color(0xFFFEF08A),
     val secondaryOnContainerColor: Color = Color(0xFF854D0E),
     // Días de sorteo (0 = Domingo, 1 = Lunes, 2 = Martes, 3 = Miércoles, 4 = Jueves, 5 = Viernes, 6 = Sábado)
-    val drawDays: List<Int> = listOf(0, 1, 2, 3, 4, 5, 6)
+    val drawDays: List<Int> = listOf(0, 1, 2, 3, 4, 5, 6),
+    val costPerBet: Double = 1.0
 ) {
     fun formatDrawDays(): String {
         val dayNames = mapOf(
@@ -62,7 +63,8 @@ data class GameConfig(
             containerColor = Color(0xFFD1FAE5),
             onContainerColor = Color(0xFF065F46),
             hasSecondaryMatrix = false,
-            drawDays = listOf(1, 2, 3, 4, 5, 6, 0)
+            drawDays = listOf(1, 2, 3, 4, 5, 6, 0),
+            costPerBet = 0.50
         )
 
         val LaPrimitiva = GameConfig(
@@ -79,7 +81,8 @@ data class GameConfig(
             containerColor = Color(0xFFFEF3C7),
             onContainerColor = Color(0xFF78350F),
             hasSecondaryMatrix = false,
-            drawDays = listOf(1, 4, 6)
+            drawDays = listOf(1, 4, 6),
+            costPerBet = 1.00
         )
 
         val Euromillones = GameConfig(
@@ -106,7 +109,8 @@ data class GameConfig(
             secondaryGlowColor = Color(0xFFFDE047),
             secondaryContainerColor = Color(0xFFFEF08A),
             secondaryOnContainerColor = Color(0xFF854D0E),
-            drawDays = listOf(2, 5)
+            drawDays = listOf(2, 5),
+            costPerBet = 2.50
         )
 
         val AvailableGames = listOf(Bonoloto, LaPrimitiva, Euromillones)
