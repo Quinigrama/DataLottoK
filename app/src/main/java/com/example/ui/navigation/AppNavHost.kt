@@ -24,7 +24,9 @@ import kotlinx.coroutines.launch
 fun AppNavHost(
     viewModel: LotteryViewModel,
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    isDarkMode: Boolean = false,
+    onToggleDarkMode: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
@@ -65,7 +67,9 @@ fun AppNavHost(
                     coroutineScope.launch {
                         drawerState.close()
                     }
-                }
+                },
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode
             )
         },
         modifier = modifier

@@ -79,11 +79,10 @@ import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandDanger
-import com.example.ui.theme.BrandGradientEnd
-import com.example.ui.theme.BrandGradientStart
 import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
+import com.example.ui.theme.LocalExtraColors
 import com.example.ui.viewmodel.LotteryViewModel
 import java.util.Locale
 
@@ -98,6 +97,8 @@ fun StatisticsScreen(
     val simulatedDraws by viewModel.simulatedDraws.collectAsStateWithLifecycle()
     val feedbackMessage by viewModel.userFeedback.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val extraColors = LocalExtraColors.current
 
     LaunchedEffect(feedbackMessage) {
         feedbackMessage?.let { msg ->
@@ -139,7 +140,7 @@ fun StatisticsScreen(
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    colors = listOf(BrandGradientStart, BrandGradientEnd),
+                    colors = listOf(extraColors.gradientStart, extraColors.gradientEnd),
                     start = Offset.Zero,
                     end = Offset.Infinite
                 )
@@ -159,7 +160,7 @@ fun StatisticsScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = BrandDark
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     },
@@ -171,7 +172,7 @@ fun StatisticsScreen(
                             Text(
                                 text = "📊 Estadísticas",
                                 fontWeight = FontWeight.Bold,
-                                color = BrandDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "${currentGame.flagEmoji} ${currentGame.name}",
@@ -188,7 +189,7 @@ fun StatisticsScreen(
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier.shadow(4.dp)
                 )
@@ -210,7 +211,7 @@ fun StatisticsScreen(
                     shape = RoundedCornerShape(14.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     TabRow(
@@ -243,7 +244,7 @@ fun StatisticsScreen(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 13.sp,
                                         maxLines = 1,
-                                        color = if (isSelected) game.primaryColor else Color(0xFF64748B)
+                                        color = if (isSelected) game.primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             )
@@ -293,7 +294,7 @@ fun StatisticsScreen(
                         .widthIn(max = 540.dp)
                         .padding(bottom = 8.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                 ) {
                     Column(
@@ -310,12 +311,12 @@ fun StatisticsScreen(
                                     text = "Generador de Frecuencias",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = BrandDark
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = if (simulatedDraws.isNotEmpty()) "${simulatedDraws.size} sorteos analizados" else "Sin sorteos generados",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF64748B)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
@@ -344,7 +345,7 @@ fun StatisticsScreen(
 
                         // Legend
                         if (simulatedDraws.isNotEmpty()) {
-                            HorizontalDivider(color = Color(0xFFF1F5F9))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -359,7 +360,7 @@ fun StatisticsScreen(
                                         text = "Caliente (≥ p70)",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = BrandDark
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 Row(
@@ -371,7 +372,7 @@ fun StatisticsScreen(
                                         text = "Frío (≤ p30)",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = BrandDark
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 Row(
@@ -381,13 +382,13 @@ fun StatisticsScreen(
                                     Box(
                                         modifier = Modifier
                                             .size(8.dp)
-                                            .background(Color(0xFF94A3B8), CircleShape)
+                                            .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape)
                                     )
                                     Text(
                                         text = "Neutro",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = BrandDark
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }
@@ -403,7 +404,7 @@ fun StatisticsScreen(
                             .widthIn(max = 540.dp)
                             .padding(bottom = 8.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         TabRow(
@@ -428,7 +429,7 @@ fun StatisticsScreen(
                                         text = "Números Principales (1-${currentGame.maxNumber})",
                                         fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 12.sp,
-                                        color = if (selectedTab == 0) gamePrimaryColor else Color(0xFF64748B)
+                                        color = if (selectedTab == 0) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             )
@@ -440,7 +441,7 @@ fun StatisticsScreen(
                                         text = "${currentGame.secondaryEmoji ?: "⭐"} ${currentGame.secondaryName ?: "Estrellas"} (1-${currentGame.secondaryMaxNumber ?: 12})",
                                         fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 12.sp,
-                                        color = if (selectedTab == 1) currentGame.secondaryDarkColor else Color(0xFF64748B)
+                                        color = if (selectedTab == 1) currentGame.secondaryDarkColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             )
@@ -457,7 +458,7 @@ fun StatisticsScreen(
                             .weight(1f)
                             .padding(vertical = 4.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                     ) {
                         Column(
@@ -490,7 +491,7 @@ fun StatisticsScreen(
                                 text = "Sin Datos Estadísticos",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = BrandDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
@@ -498,7 +499,7 @@ fun StatisticsScreen(
                             Text(
                                 text = "Simula sorteos para ver las frecuencias de aparición y los números calientes / fríos para ${currentGame.name}.",
                                 fontSize = 14.sp,
-                                color = Color(0xFF64748B),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
 
@@ -567,13 +568,13 @@ fun FrequencyCard(
         )
         NumberClassification.COLD -> Triple(
             "🧊 Frío",
-            Color(0xFFE2E8F0),
-            Color(0xFF334155)
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant
         )
         NumberClassification.NEUTRAL -> Triple(
             "Neutro",
-            Color(0xFFF8FAFC),
-            Color(0xFF94A3B8)
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 
@@ -582,7 +583,7 @@ fun FrequencyCard(
             .fillMaxWidth()
             .testTag("freq_card_${if (isStar) "star_" else ""}${entry.number}"),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp)
     ) {
         Row(
@@ -617,14 +618,14 @@ fun FrequencyCard(
                         text = "Número ${entry.number}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = BrandDark
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
                         text = "${entry.count} apariciones (${String.format(Locale.getDefault(), "%.1f", entry.percentage)}%)",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
-                        color = Color(0xFF475569)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -636,10 +637,10 @@ fun FrequencyCard(
                         .clip(RoundedCornerShape(2.5.dp)),
                     color = when (entry.classification) {
                         NumberClassification.HOT -> if (isStar) gameConfig.secondaryDarkColor else gameConfig.primaryColor
-                        NumberClassification.COLD -> Color(0xFF94A3B8)
-                        NumberClassification.NEUTRAL -> Color(0xFFCBD5E1)
+                        NumberClassification.COLD -> MaterialTheme.colorScheme.onSurfaceVariant
+                        NumberClassification.NEUTRAL -> MaterialTheme.colorScheme.outline
                     },
-                    trackColor = Color(0xFFF1F5F9)
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             }
 

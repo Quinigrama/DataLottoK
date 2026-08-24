@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.data.local.AppDatabase
 import com.example.data.local.ContractPreferences
+import com.example.data.local.ThemePreferences
 import com.example.data.repository.TicketRepository
 import com.example.ui.navigation.AppNavHost
 import com.example.ui.screens.legal.ResponsibleUseContractScreen
@@ -31,6 +32,9 @@ class MainActivity : ComponentActivity() {
             val isContractAccepted = remember {
                 mutableStateOf(ContractPreferences.isAccepted(applicationContext))
             }
+            val isDarkMode = remember {
+                mutableStateOf(ThemePreferences.isDarkMode(applicationContext))
+            }
 
             if (!isContractAccepted.value) {
                 ResponsibleUseContractScreen(
@@ -39,8 +43,16 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             } else {
-                DataLottoTheme {
-                    AppNavHost(viewModel = viewModel)
+                DataLottoTheme(darkTheme = isDarkMode.value) {
+                    AppNavHost(
+                        viewModel = viewModel,
+                        isDarkMode = isDarkMode.value,
+                        onToggleDarkMode = {
+                            val newVal = !isDarkMode.value
+                            isDarkMode.value = newVal
+                            ThemePreferences.setDarkMode(applicationContext, newVal)
+                        }
+                    )
                 }
             }
         }

@@ -1,7 +1,9 @@
 package com.example.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,7 +44,9 @@ fun AppSidebar(
     onNavigateToStatistics: () -> Unit,
     savedTicketsCount: Int,
     onCloseDrawer: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDarkMode: Boolean = false,
+    onToggleDarkMode: () -> Unit = {}
 ) {
     ModalDrawerSheet(
         modifier = modifier.width(280.dp),
@@ -141,7 +146,10 @@ fun AppSidebar(
                 SidebarSectionHeader(title = "⚙️ CONFIGURACIÓN")
 
                 DisabledSidebarLinkItem(text = "🗓️ Recordatorios de Sorteos")
-                DisabledSidebarLinkItem(text = "🌙 Modo Oscuro")
+                DarkModeToggleItem(
+                    isDarkMode = isDarkMode,
+                    onToggle = onToggleDarkMode
+                )
                 DisabledSidebarLinkItem(text = "🔗 Enlaces a URLs")
                 DisabledSidebarLinkItem(text = "✉️ Contacto")
 
@@ -237,3 +245,47 @@ private fun DisabledSidebarLinkItem(
         )
     }
 }
+
+@Composable
+private fun DarkModeToggleItem(
+    isDarkMode: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(46.dp)
+            .clickable {
+                onToggle()
+                val message = if (!isDarkMode) "🌙 Modo oscuro activado" else "☀️ Modo claro activado"
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "🌙 Modo Oscuro",
+            color = Color.White.copy(alpha = 0.85f),
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f)
+        )
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (isDarkMode) BrandIndigo else Color.White.copy(alpha = 0.15f))
+                .padding(horizontal = 8.dp, vertical = 2.dp)
+        ) {
+            Text(
+                text = if (isDarkMode) "ON" else "OFF",
+                color = Color.White,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+

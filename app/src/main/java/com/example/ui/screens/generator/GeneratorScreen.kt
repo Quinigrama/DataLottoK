@@ -75,11 +75,10 @@ import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDanger
 import com.example.ui.theme.BrandDark
-import com.example.ui.theme.BrandGradientEnd
-import com.example.ui.theme.BrandGradientStart
 import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
+import com.example.ui.theme.LocalExtraColors
 import com.example.ui.viewmodel.LotteryViewModel
 import java.util.Locale
 
@@ -103,6 +102,7 @@ fun GeneratorScreen(
     val feedbackMessage by viewModel.userFeedback.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val extraColors = LocalExtraColors.current
 
     LaunchedEffect(feedbackMessage) {
         feedbackMessage?.let { msg ->
@@ -180,7 +180,7 @@ fun GeneratorScreen(
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    colors = listOf(BrandGradientStart, BrandGradientEnd),
+                    colors = listOf(extraColors.gradientStart, extraColors.gradientEnd),
                     start = Offset.Zero,
                     end = Offset.Infinite
                 )
@@ -200,7 +200,7 @@ fun GeneratorScreen(
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Menú",
-                                tint = BrandDark
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     },
@@ -212,7 +212,7 @@ fun GeneratorScreen(
                             Text(
                                 text = "DataLotto",
                                 fontWeight = FontWeight.Bold,
-                                color = BrandDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "${currentGame.flagEmoji} ${currentGame.name}",
@@ -264,7 +264,7 @@ fun GeneratorScreen(
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier.shadow(4.dp)
                 )
@@ -286,7 +286,7 @@ fun GeneratorScreen(
                     shape = RoundedCornerShape(14.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     TabRow(
@@ -316,7 +316,7 @@ fun GeneratorScreen(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 13.sp,
                                         maxLines = 1,
-                                        color = if (isSelected) game.primaryColor else Color(0xFF64748B)
+                                        color = if (isSelected) game.primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             )
@@ -332,7 +332,7 @@ fun GeneratorScreen(
                         .padding(bottom = 8.dp),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Row(
                         modifier = Modifier
@@ -357,7 +357,7 @@ fun GeneratorScreen(
                             Text(
                                 text = "🎲 Simple",
                                 fontWeight = if (isSimple) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSimple) gamePrimaryColor else Color(0xFF64748B),
+                                color = if (isSimple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
                             )
                         }
@@ -375,7 +375,7 @@ fun GeneratorScreen(
                             Text(
                                 text = "🎯 Múltiple",
                                 fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isMultiple) gamePrimaryColor else Color(0xFF64748B),
+                                color = if (isMultiple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
                             )
                         }
@@ -393,7 +393,7 @@ fun GeneratorScreen(
                             Text(
                                 text = "🧩 Reducida",
                                 fontWeight = if (isReduced) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isReduced) gamePrimaryColor else Color(0xFF64748B),
+                                color = if (isReduced) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp
                             )
                         }
@@ -416,7 +416,7 @@ fun GeneratorScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
                                     .testTag("multiple_config_card"),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
@@ -428,7 +428,7 @@ fun GeneratorScreen(
                                         text = "Configuración de Apuesta Múltiple",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = BrandDark
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
 
                                     // Primary count selector
@@ -437,7 +437,7 @@ fun GeneratorScreen(
                                             text = if (currentGame.hasSecondaryMatrix) "Cantidad de números principales:" else "Cantidad de números a combinar:",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF475569)
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                         FlowRow(
                                             modifier = Modifier.fillMaxWidth(),
@@ -473,7 +473,7 @@ fun GeneratorScreen(
                                                 text = "Cantidad de ${currentGame.secondaryName?.lowercase() ?: "estrellas"}:",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = Color(0xFF475569)
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             FlowRow(
                                                 modifier = Modifier.fillMaxWidth(),
@@ -503,7 +503,7 @@ fun GeneratorScreen(
                                         }
                                     }
 
-                                    HorizontalDivider(color = Color(0xFFF1F5F9))
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
 
                                     // Informative Live Bets and Cost Badge
                                     if (liveError != null) {
@@ -535,7 +535,7 @@ fun GeneratorScreen(
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
                                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
@@ -543,14 +543,14 @@ fun GeneratorScreen(
                                             Text(
                                                 text = "Combinaciones cubiertas:",
                                                 fontSize = 12.5.sp,
-                                                color = Color(0xFF64748B),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontWeight = FontWeight.Medium
                                             )
                                             Text(
                                                 text = "$liveBets apuestas · ${String.format(Locale.getDefault(), "%.2f", liveCost)} €",
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = BrandDark
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -567,7 +567,7 @@ fun GeneratorScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
                                     .testTag("reduced_config_card"),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
@@ -579,7 +579,7 @@ fun GeneratorScreen(
                                         text = "Configuración de Sistema Reducido",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = BrandDark
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
 
                                     // System selector chips
@@ -613,7 +613,7 @@ fun GeneratorScreen(
                                         Text(
                                             text = sys.description,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF475569),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             lineHeight = 16.sp
                                         )
 
@@ -621,7 +621,7 @@ fun GeneratorScreen(
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
                                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
@@ -629,14 +629,14 @@ fun GeneratorScreen(
                                             Text(
                                                 text = "Combinaciones cubiertas:",
                                                 fontSize = 12.5.sp,
-                                                color = Color(0xFF64748B),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontWeight = FontWeight.Medium
                                             )
                                             Text(
                                                 text = "${sys.combinationsCount} apuestas · ${String.format(Locale.getDefault(), "%.2f", totalCost)} €",
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = BrandDark
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -652,7 +652,7 @@ fun GeneratorScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White
+                                containerColor = MaterialTheme.colorScheme.surface
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                             shape = RoundedCornerShape(16.dp)
@@ -672,14 +672,14 @@ fun GeneratorScreen(
                                                 text = "${selectedNumbers.size}/$multipleNumberCount núm. • ${selectedSecondaryNumbers.size}/$multipleSecondaryCount ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
                                                 text = "${selectedNumbers.size}/$multipleNumberCount números seleccionados",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     } else if (strategy == "reducida") {
@@ -689,14 +689,14 @@ fun GeneratorScreen(
                                                 text = "${selectedNumbers.size}/$baseCount núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
                                                 text = "${selectedNumbers.size}/$baseCount números seleccionados",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     } else {
@@ -705,14 +705,14 @@ fun GeneratorScreen(
                                                 text = "${selectedNumbers.size}/${currentGame.pickCount} núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         } else {
                                             Text(
                                                 text = "${selectedNumbers.size}/${currentGame.pickCount} números seleccionados",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                                color = if (isComplete) gamePrimaryColor else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -759,7 +759,7 @@ fun GeneratorScreen(
                                         .height(6.dp)
                                         .clip(RoundedCornerShape(3.dp)),
                                     color = gamePrimaryColor,
-                                    trackColor = Color(0xFFE2E8F0)
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -770,7 +770,7 @@ fun GeneratorScreen(
                                         Text(
                                             text = "Pulsa \"🎯 Generar Múltiple\" para generar los $multipleNumberCount números al azar",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF64748B),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                             modifier = Modifier.padding(vertical = 6.dp)
                                         )
@@ -818,7 +818,7 @@ fun GeneratorScreen(
                                         Text(
                                             text = "Toca los números en la cuadrícula para seleccionar los ${selectedReducedSystem?.baseNumbersCount ?: 0} números base",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFF64748B),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                             modifier = Modifier.padding(vertical = 6.dp)
                                         )
@@ -887,7 +887,7 @@ fun GeneratorScreen(
                                                     modifier = Modifier
                                                         .size(36.dp)
                                                         .background(
-                                                            Color(0xFFF1F5F9),
+                                                            MaterialTheme.colorScheme.surfaceVariant,
                                                             CircleShape
                                                         )
                                                         .clip(CircleShape),
@@ -895,7 +895,7 @@ fun GeneratorScreen(
                                                 ) {
                                                     Text(
                                                         text = "-",
-                                                        color = Color(0xFF94A3B8),
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontWeight = FontWeight.Bold
                                                     )
                                                 }
@@ -970,7 +970,7 @@ fun GeneratorScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
                                     .testTag("combination_quality_card"),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
@@ -994,7 +994,7 @@ fun GeneratorScreen(
                                                 text = "Calidad de la Combinación",
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
-                                                color = BrandDark
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
 
@@ -1022,19 +1022,19 @@ fun GeneratorScreen(
                                             .height(6.dp)
                                             .clip(RoundedCornerShape(3.dp)),
                                         color = scoreColor,
-                                        trackColor = Color(0xFFF1F5F9)
+                                        trackColor = MaterialTheme.colorScheme.surfaceVariant
                                     )
 
                                     Text(
                                         text = qualityValuation,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = BrandDark,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontWeight = FontWeight.Medium,
                                         lineHeight = 16.sp
                                     )
 
                                     HorizontalDivider(
-                                        color = Color(0xFFF1F5F9),
+                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                                         thickness = 1.dp,
                                         modifier = Modifier.padding(vertical = 2.dp)
                                     )
@@ -1042,7 +1042,7 @@ fun GeneratorScreen(
                                     Text(
                                         text = "El azar de cada sorteo es independiente; esta puntuación no aumenta tus probabilidades de ganar.",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = Color(0xFF64748B),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 10.5.sp,
                                         lineHeight = 13.sp
                                     )
@@ -1061,7 +1061,7 @@ fun GeneratorScreen(
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 )
                             ) {
                                 Column(
@@ -1080,7 +1080,7 @@ fun GeneratorScreen(
                                             text = if (currentGame.hasSecondaryMatrix) "Números principales (1-${currentGame.maxNumber})" else "Números (1-${currentGame.maxNumber})",
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.Bold,
-                                            color = BrandDark
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                         val primaryLabel = if (strategy == "reducida") {
                                             "${selectedNumbers.size}/${selectedReducedSystem?.baseNumbersCount ?: 0}"
@@ -1092,7 +1092,7 @@ fun GeneratorScreen(
                                             text = primaryLabel,
                                             style = MaterialTheme.typography.labelMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isPrimaryCompleteForGrid) gamePrimaryColor else Color(0xFF64748B)
+                                            color = if (isPrimaryCompleteForGrid) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
 
@@ -1159,7 +1159,7 @@ fun GeneratorScreen(
                                                 text = "${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount}",
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (isSimpleSecondaryComplete) currentGame.secondaryDarkColor else Color(0xFF64748B)
+                                                color = if (isSimpleSecondaryComplete) currentGame.secondaryDarkColor else MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
 
@@ -1204,7 +1204,7 @@ fun GeneratorScreen(
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Column(
@@ -1277,7 +1277,7 @@ fun GeneratorScreen(
                             enabled = isComplete && (strategy != "multiple" || liveError == null),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = gamePrimaryColor,
-                                disabledContainerColor = Color(0xFFF1F5F9)
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         ) {
                             Icon(
@@ -1294,7 +1294,7 @@ fun GeneratorScreen(
                                 },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
-                                color = if (isComplete && (strategy != "multiple" || liveError == null)) Color.White else Color(0xFF94A3B8)
+                                color = if (isComplete && (strategy != "multiple" || liveError == null)) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

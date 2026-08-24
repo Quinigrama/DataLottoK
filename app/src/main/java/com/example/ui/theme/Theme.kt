@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
@@ -46,25 +47,25 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldDarkTheme,
-    onPrimary = Color(0xFF022C22),
-    primaryContainer = EmeraldDark,
-    onPrimaryContainer = EmeraldLight,
-    secondary = Color(0xFFFBBF24),
-    onSecondary = Color(0xFF451A03),
-    secondaryContainer = Color(0xFF78350F),
-    onSecondaryContainer = GoldLight,
+    primary = DarkIndigo,
+    onPrimary = DarkBackground,
+    primaryContainer = Color(0xFF312E81),
+    onPrimaryContainer = Color(0xFFE0E7FF),
+    secondary = DarkViolet,
+    onSecondary = Color(0xFF2E1065),
+    secondaryContainer = Color(0xFF4C1D95),
+    onSecondaryContainer = Color(0xFFEDE9FE),
     tertiary = Color(0xFF60A5FA),
     onTertiary = Color(0xFF1E3A8A),
     error = BrandDanger,
     onError = Color.White,
-    background = SlateDarkBackground,
-    onBackground = Color(0xFFF1F5F9),
-    surface = SlateDarkSurface,
-    onSurface = Color(0xFFF1F5F9),
-    surfaceVariant = SlateDarkSurfaceVariant,
+    background = DarkBackground,
+    onBackground = Color(0xFFF8FAFC),
+    surface = DarkSurface,
+    onSurface = Color(0xFFF8FAFC),
+    surfaceVariant = DarkSurfaceVariant,
     onSurfaceVariant = Color(0xFF94A3B8),
-    outline = Color(0xFF475569)
+    outline = DarkOutline
 )
 
 @Composable
@@ -82,10 +83,29 @@ fun DataLottoTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val extraColors = if (darkTheme) {
+        ExtraColors(
+            success = BrandSuccess,
+            warning = BrandWarning,
+            gradientStart = DarkGradientStart,
+            gradientEnd = DarkGradientEnd
+        )
+    } else {
+        ExtraColors(
+            success = BrandSuccess,
+            warning = BrandWarning,
+            gradientStart = BrandGradientStart,
+            gradientEnd = BrandGradientEnd
+        )
+    }
+
+    CompositionLocalProvider(LocalExtraColors provides extraColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
+
 

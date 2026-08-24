@@ -78,11 +78,10 @@ import com.example.data.model.SavedTicket
 import com.example.logic.ReducedSystemCalculator
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDark
-import com.example.ui.theme.BrandGradientEnd
-import com.example.ui.theme.BrandGradientStart
 import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandSuccess
 import com.example.ui.theme.BrandWarning
+import com.example.ui.theme.LocalExtraColors
 import com.example.ui.viewmodel.LotteryViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -104,6 +103,8 @@ fun SavedTicketsScreen(
     val winningNumbers by viewModel.winningNumbers.collectAsStateWithLifecycle()
     val winningSecondaryNumbers by viewModel.winningSecondaryNumbers.collectAsStateWithLifecycle()
 
+    val extraColors = LocalExtraColors.current
+
     LaunchedEffect(feedbackMessage) {
         feedbackMessage?.let { msg ->
             snackbarHostState.showSnackbar(msg)
@@ -124,7 +125,7 @@ fun SavedTicketsScreen(
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    colors = listOf(BrandGradientStart, BrandGradientEnd),
+                    colors = listOf(extraColors.gradientStart, extraColors.gradientEnd),
                     start = Offset.Zero,
                     end = Offset.Infinite
                 )
@@ -140,7 +141,7 @@ fun SavedTicketsScreen(
                         Text(
                             text = "Mis Boletos Guardados",
                             fontWeight = FontWeight.Bold,
-                            color = BrandDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     },
                     navigationIcon = {
@@ -151,12 +152,12 @@ fun SavedTicketsScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
-                                tint = BrandDark
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier.shadow(4.dp)
                 )
@@ -183,7 +184,7 @@ fun SavedTicketsScreen(
                             .widthIn(max = 600.dp)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        // Filter Chips in a solid white card
+                        // Filter Chips in a surface card
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -191,7 +192,7 @@ fun SavedTicketsScreen(
                             shape = RoundedCornerShape(14.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color.White
+                                containerColor = MaterialTheme.colorScheme.surface
                             )
                         ) {
                             LazyRow(
@@ -339,7 +340,7 @@ fun TicketCard(
             .fillMaxWidth()
             .testTag("ticket_card_${ticket.id}"),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
@@ -416,7 +417,7 @@ fun TicketCard(
                     Text(
                         text = formattedDate,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF64748B)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -480,7 +481,7 @@ fun TicketCard(
             }
 
             Spacer(modifier = Modifier.height(14.dp))
-            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
             // Validation status and Action
@@ -498,7 +499,7 @@ fun TicketCard(
                     Text(
                         text = infoText,
                         fontSize = 11.5.sp,
-                        color = Color(0xFF94A3B8),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         lineHeight = 15.sp
                     )
@@ -518,7 +519,7 @@ fun TicketCard(
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (isWinning) BrandSuccess.copy(alpha = 0.15f) else Color(0xFFF1F5F9),
+                                        if (isWinning) BrandSuccess.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
                                         RoundedCornerShape(6.dp)
                                     )
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -530,14 +531,14 @@ fun TicketCard(
                                     Icon(
                                         imageVector = if (isWinning) Icons.Default.EmojiEvents else Icons.Default.CheckCircle,
                                         contentDescription = null,
-                                        tint = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                                        tint = if (isWinning) BrandSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
                                         text = "✓ Validado",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isWinning) BrandSuccess else Color(0xFF64748B)
+                                        color = if (isWinning) BrandSuccess else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -546,7 +547,7 @@ fun TicketCard(
                                 text = ticket.prizeLabel ?: "Sin premio",
                                 fontSize = 12.sp,
                                 fontWeight = if (isWinning) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                                color = if (isWinning) BrandSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1
                             )
                         }
@@ -569,7 +570,7 @@ fun TicketCard(
                         Text(
                             text = "Pendiente de validación",
                             fontSize = 12.sp,
-                            color = Color(0xFF94A3B8)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Button(
@@ -632,7 +633,7 @@ fun TicketValidationDialog(
                 .testTag("validation_dialog"),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
@@ -652,7 +653,7 @@ fun TicketValidationDialog(
                             text = "Validar Boleto",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = BrandDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "${gameConfig.flagEmoji} ${gameConfig.name}",
@@ -669,7 +670,7 @@ fun TicketValidationDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Cerrar",
-                            tint = BrandDark
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -681,7 +682,7 @@ fun TicketValidationDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF8FAFC)
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
@@ -708,7 +709,7 @@ fun TicketValidationDialog(
                             Text(
                                 text = "Este juego sortea: ${gameConfig.formatDrawDays()}",
                                 fontSize = 12.sp,
-                                color = Color(0xFF475569)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -728,7 +729,7 @@ fun TicketValidationDialog(
                         text = "Tu combinación guardada:",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF64748B)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
@@ -739,7 +740,6 @@ fun TicketValidationDialog(
                         ticket.numbers.sorted().forEach { num ->
                             LotteryBall(
                                 number = num,
-                                isSelected = true,
                                 size = 32.dp,
                                 primaryColor = gameConfig.primaryColor,
                                 darkColor = gameConfig.darkColor,
@@ -756,7 +756,6 @@ fun TicketValidationDialog(
                             ticket.secondaryNumbers.sorted().forEach { secNum ->
                                 LotteryBall(
                                     number = secNum,
-                                    isSelected = true,
                                     size = 32.dp,
                                     isStar = true,
                                     primaryColor = gameConfig.secondaryPrimaryColor,
@@ -768,7 +767,7 @@ fun TicketValidationDialog(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    HorizontalDivider(color = Color(0xFFE2E8F0))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Primary winning numbers section
@@ -781,7 +780,7 @@ fun TicketValidationDialog(
                             text = "Números Ganadores:",
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = BrandDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "${winningNumbers.size} / ${gameConfig.pickCount}",
@@ -818,7 +817,7 @@ fun TicketValidationDialog(
                     // Secondary winning numbers section (Euromillones)
                     if (gameConfig.hasSecondaryMatrix && gameConfig.secondaryMaxNumber != null) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = Color(0xFFE2E8F0))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Row(
@@ -830,7 +829,7 @@ fun TicketValidationDialog(
                                 text = "${gameConfig.secondaryEmoji ?: "⭐"} ${gameConfig.secondaryName ?: "Estrellas"} Ganadoras:",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = BrandDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "${winningSecondaryNumbers.size} / ${gameConfig.secondaryPickCount}",
@@ -930,7 +929,7 @@ fun EmptyTicketsView(
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -942,7 +941,7 @@ fun EmptyTicketsView(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFEEF2FF)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -959,7 +958,7 @@ fun EmptyTicketsView(
                 text = message,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = BrandDark
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -967,7 +966,7 @@ fun EmptyTicketsView(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF64748B),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 12.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
@@ -996,6 +995,7 @@ fun EmptyTicketsView(
         }
     }
 }
+
 
 
 
