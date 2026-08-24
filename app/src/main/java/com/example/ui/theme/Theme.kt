@@ -8,24 +8,38 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
+@Immutable
+data class ExtraColors(
+    val success: Color = BrandSuccess,
+    val warning: Color = BrandWarning,
+    val gradientStart: Color = BrandGradientStart,
+    val gradientEnd: Color = BrandGradientEnd
+)
+
+val LocalExtraColors = staticCompositionLocalOf { ExtraColors() }
+
 private val LightColorScheme = lightColorScheme(
-    primary = Emerald40,
+    primary = BrandIndigo,
     onPrimary = Color.White,
-    primaryContainer = EmeraldLight,
-    onPrimaryContainer = EmeraldDark,
-    secondary = GoldAccent,
+    primaryContainer = Color(0xFFEEF2FF),
+    onPrimaryContainer = BrandIndigoDark,
+    secondary = BrandViolet,
     onSecondary = Color.White,
-    secondaryContainer = GoldLight,
-    onSecondaryContainer = Color(0xFF78350F),
+    secondaryContainer = Color(0xFFF3E8FF),
+    onSecondaryContainer = Color(0xFF581C87),
     tertiary = Color(0xFF2563EB),
     onTertiary = Color.White,
+    error = BrandDanger,
+    onError = Color.White,
     background = SlateBackground,
-    onBackground = NavyDark,
+    onBackground = BrandDark,
     surface = SlateSurface,
-    onSurface = NavyDark,
+    onSurface = BrandDark,
     surfaceVariant = SlateSurfaceVariant,
     onSurfaceVariant = Color(0xFF475569),
     outline = SlateOutline
@@ -42,6 +56,8 @@ private val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = GoldLight,
     tertiary = Color(0xFF60A5FA),
     onTertiary = Color(0xFF1E3A8A),
+    error = BrandDanger,
+    onError = Color.White,
     background = SlateDarkBackground,
     onBackground = Color(0xFFF1F5F9),
     surface = SlateDarkSurface,
@@ -72,3 +88,4 @@ fun DataLottoTheme(
         content = content
     )
 }
+

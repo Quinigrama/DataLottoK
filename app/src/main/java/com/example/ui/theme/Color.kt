@@ -2,6 +2,19 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// DataLotto Official Brand Tokens (from web app index.css)
+val BrandIndigo = Color(0xFF6366F1)        // --primary: #6366f1
+val BrandIndigoDark = Color(0xFF4F46E5)    // --primary-dark: #4f46e5
+val BrandViolet = Color(0xFF8B5CF6)        // --secondary: #8b5cf6
+val BrandSuccess = Color(0xFF10B981)       // --success: #10b981
+val BrandDanger = Color(0xFFEF4444)        // --danger: #ef4444
+val BrandWarning = Color(0xFFF59E0B)       // --warning: #f59e0b
+val BrandDark = Color(0xFF1F2937)          // --dark: #1f2937
+
+// Background gradient (linear-gradient(135deg, #667eea 0%, #764ba2 100%))
+val BrandGradientStart = Color(0xFF667EEA)
+val BrandGradientEnd = Color(0xFF764BA2)
+
 // Light Palette (Fresh Emerald, Gold, Sapphire)
 val Emerald80 = Color(0xFF6EE7B7)
 val Emerald40 = Color(0xFF059669)
@@ -23,3 +36,4 @@ val EmeraldDarkTheme = Color(0xFF10B981)
 val SlateDarkBackground = Color(0xFF0B1120)
 val SlateDarkSurface = Color(0xFF1E293B)
 val SlateDarkSurfaceVariant = Color(0xFF334155)
+

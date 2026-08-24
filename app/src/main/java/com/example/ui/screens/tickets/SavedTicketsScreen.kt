@@ -23,9 +23,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -47,6 +47,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
 import com.example.ui.components.LotteryBall
+import com.example.ui.theme.BrandDark
+import com.example.ui.theme.BrandGradientEnd
+import com.example.ui.theme.BrandGradientStart
+import com.example.ui.theme.BrandIndigo
 import com.example.ui.viewmodel.LotteryViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -88,140 +95,165 @@ fun SavedTicketsScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Mis Boletos Guardados",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier.testTag("back_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(BrandGradientStart, BrandGradientEnd),
+                    start = Offset.Zero,
+                    end = Offset.Infinite
                 )
             )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            if (savedTickets.isEmpty()) {
-                EmptyTicketsView(
-                    message = "No tienes boletos guardados",
-                    description = "Genera o elige tus 6 números en la pantalla principal y pulsa \"Guardar Boleto\" para guardarlos aquí.",
-                    buttonText = "🍀 Ir al Generador",
-                    onButtonClick = onNavigateBack,
-                    modifier = Modifier.padding(24.dp)
-                )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .widthIn(max = 600.dp)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    // Filter Chips (Todos, Bonoloto, La Primitiva)
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        item {
-                            val isSelected = filterGameId == null
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.setTicketFilter(null) },
-                                label = {
-                                    Text(
-                                        text = "Todos (${savedTickets.size})",
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                leadingIcon = if (isSelected) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                } else null,
-                                modifier = Modifier.testTag("filter_chip_all")
-                            )
-                        }
-
-                        items(GameConfig.AvailableGames) { game ->
-                            val isSelected = filterGameId == game.id
-                            val gameCount = savedTickets.count { it.gameId.equals(game.id, ignoreCase = true) }
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.setTicketFilter(if (isSelected) null else game.id) },
-                                label = {
-                                    Text(
-                                        text = "${game.flagEmoji} ${game.name} ($gameCount)",
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                leadingIcon = if (isSelected) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                } else null,
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = game.containerColor,
-                                    selectedLabelColor = game.onContainerColor,
-                                    selectedLeadingIconColor = game.onContainerColor
-                                ),
-                                modifier = Modifier.testTag("filter_chip_${game.id}")
-                            )
-                        }
-                    }
-
-                    if (filteredTickets.isEmpty()) {
-                        EmptyTicketsView(
-                            message = "No hay boletos de este juego",
-                            description = "No has guardado combinaciones para este filtro todavía.",
-                            buttonText = "Mostrar todos los boletos",
-                            onButtonClick = { viewModel.setTicketFilter(null) },
-                            modifier = Modifier.weight(1f)
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Mis Boletos Guardados",
+                            fontWeight = FontWeight.Bold,
+                            color = BrandDark
                         )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.testTag("back_button")
                         ) {
-                            items(
-                                items = filteredTickets,
-                                key = { it.id }
-                            ) { ticket ->
-                                TicketCard(
-                                    ticket = ticket,
-                                    onDelete = { viewModel.deleteTicket(ticket) }
-                                )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = BrandDark
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.White
+                    ),
+                    modifier = Modifier.shadow(4.dp)
+                )
+            }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                if (savedTickets.isEmpty()) {
+                    EmptyTicketsView(
+                        message = "No tienes boletos guardados",
+                        description = "Genera o elige tus números en la pantalla principal y pulsa \"Guardar Boleto\" para guardarlos aquí.",
+                        buttonText = "🍀 Ir al Generador",
+                        onButtonClick = onNavigateBack,
+                        modifier = Modifier.padding(24.dp)
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .widthIn(max = 600.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        // Filter Chips in a solid white card
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 10.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White
+                            )
+                        ) {
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                item {
+                                    val isSelected = filterGameId == null
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { viewModel.setTicketFilter(null) },
+                                        label = {
+                                            Text(
+                                                text = "Todos (${savedTickets.size})",
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        },
+                                        leadingIcon = if (isSelected) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        } else null,
+                                        modifier = Modifier.testTag("filter_chip_all")
+                                    )
+                                }
+
+                                items(GameConfig.AvailableGames) { game ->
+                                    val isSelected = filterGameId == game.id
+                                    val gameCount = savedTickets.count { it.gameId.equals(game.id, ignoreCase = true) }
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { viewModel.setTicketFilter(if (isSelected) null else game.id) },
+                                        label = {
+                                            Text(
+                                                text = "${game.flagEmoji} ${game.name} ($gameCount)",
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        },
+                                        leadingIcon = if (isSelected) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        } else null,
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = game.containerColor,
+                                            selectedLabelColor = game.onContainerColor,
+                                            selectedLeadingIconColor = game.onContainerColor
+                                        ),
+                                        modifier = Modifier.testTag("filter_chip_${game.id}")
+                                    )
+                                }
+                            }
+                        }
+
+                        if (filteredTickets.isEmpty()) {
+                            EmptyTicketsView(
+                                message = "No hay boletos de este juego",
+                                description = "No has guardado combinaciones para este filtro todavía.",
+                                buttonText = "Mostrar todos los boletos",
+                                onButtonClick = { viewModel.setTicketFilter(null) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(
+                                    items = filteredTickets,
+                                    key = { it.id }
+                                ) { ticket ->
+                                    TicketCard(
+                                        ticket = ticket,
+                                        onDelete = { viewModel.deleteTicket(ticket) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -253,9 +285,9 @@ fun TicketCard(
             .fillMaxWidth()
             .testTag("ticket_card_${ticket.id}"),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
@@ -289,7 +321,7 @@ fun TicketCard(
                     Text(
                         text = formattedDate,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
                 }
 
@@ -369,63 +401,78 @@ fun EmptyTicketsView(
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .widthIn(max = 480.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
-        Box(
-            modifier = Modifier
-                .size(90.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier.padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.FolderOpen,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(44.dp)
-            )
-        }
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFEEF2FF)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FolderOpen,
+                    contentDescription = null,
+                    tint = BrandIndigo,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-        Text(
-            text = message,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 24.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = onButtonClick,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.testTag("empty_action_button")
-        ) {
-            Icon(
-                imageVector = Icons.Default.Casino,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = buttonText,
-                fontWeight = FontWeight.Bold
+                text = message,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = BrandDark
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF64748B),
+                modifier = Modifier.padding(horizontal = 12.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = onButtonClick,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandIndigo
+                ),
+                modifier = Modifier.testTag("empty_action_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Casino,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = buttonText,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
+
 
