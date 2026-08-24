@@ -77,10 +77,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
+import com.example.logic.GridLayout
 import com.example.logic.MultipleTicketCalculator
 import com.example.logic.ReducedSystemCalculator
 import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
+import com.example.ui.components.NumberGridPanel
 import com.example.ui.theme.BrandDanger
 import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandIndigo
@@ -1113,24 +1115,17 @@ fun GeneratorScreen(
                                         )
                                     }
 
-                                    val numbers = (currentGame.minNumber..currentGame.maxNumber).toList()
-                                    FlowRow(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        numbers.forEach { num ->
-                                            LotteryBall(
-                                                number = num,
-                                                isSelected = selectedNumbers.contains(num),
-                                                size = 41.dp,
-                                                primaryColor = currentGame.primaryColor,
-                                                darkColor = currentGame.darkColor,
-                                                glowColor = currentGame.glowColor,
-                                                onClick = { viewModel.toggleNumber(num) }
-                                            )
-                                        }
-                                    }
+                                    NumberGridPanel(
+                                        layout = currentGame.numbersLayout,
+                                        minNumber = currentGame.minNumber,
+                                        maxNumber = currentGame.maxNumber,
+                                        selectedNumbers = selectedNumbers,
+                                        onNumberClick = { viewModel.toggleNumber(it) },
+                                        ballSize = 40.dp,
+                                        primaryColor = currentGame.primaryColor,
+                                        darkColor = currentGame.darkColor,
+                                        glowColor = currentGame.glowColor
+                                    )
                                 }
                             }
                         }
@@ -1183,25 +1178,18 @@ fun GeneratorScreen(
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        val secondaryNums = (secMin..secMax).toList()
-                                        FlowRow(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            secondaryNums.forEach { secNum ->
-                                                LotteryBall(
-                                                    number = secNum,
-                                                    isSelected = selectedSecondaryNumbers.contains(secNum),
-                                                    size = 40.dp,
-                                                    isStar = true,
-                                                    primaryColor = currentGame.secondaryPrimaryColor,
-                                                    darkColor = currentGame.secondaryDarkColor,
-                                                    glowColor = currentGame.secondaryGlowColor,
-                                                    onClick = { viewModel.toggleSecondaryNumber(secNum) }
-                                                )
-                                            }
-                                        }
+                                        NumberGridPanel(
+                                            layout = currentGame.secondaryLayout ?: GridLayout.Standard(columns = 6),
+                                            minNumber = secMin,
+                                            maxNumber = secMax,
+                                            selectedNumbers = selectedSecondaryNumbers,
+                                            isStar = true,
+                                            ballSize = 44.dp,
+                                            onNumberClick = { viewModel.toggleSecondaryNumber(it) },
+                                            primaryColor = currentGame.secondaryPrimaryColor,
+                                            darkColor = currentGame.secondaryDarkColor,
+                                            glowColor = currentGame.secondaryGlowColor
+                                        )
                                     }
                                 }
                             }

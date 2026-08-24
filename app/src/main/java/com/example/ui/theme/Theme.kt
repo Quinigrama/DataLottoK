@@ -20,7 +20,10 @@ data class ExtraColors(
     val warning: Color = BrandWarning,
     val gradientStart: Color = BrandGradientStart,
     val gradientEnd: Color = BrandGradientEnd,
-    val cardBorder: Color = CardBorderLight
+    val cardBorder: Color = CardBorderLight,
+    val ballUnselectedStart: Color = Color(0xFFFAFAFA),
+    val ballUnselectedEnd: Color = Color(0xFFF0F0F0),
+    val ballUnselectedBorder: Color = Color(0xFFE2E8F0)
 )
 
 val LocalExtraColors = staticCompositionLocalOf { ExtraColors() }
@@ -92,7 +95,10 @@ fun DataLottoTheme(
             warning = BrandWarning,
             gradientStart = DarkGradientStart,
             gradientEnd = DarkGradientEnd,
-            cardBorder = CardBorderDark
+            cardBorder = CardBorderDark,
+            ballUnselectedStart = Color(0xFF334155),
+            ballUnselectedEnd = Color(0xFF334155),
+            ballUnselectedBorder = Color(0xFF475569)
         )
     } else {
         ExtraColors(
@@ -100,7 +106,10 @@ fun DataLottoTheme(
             warning = BrandWarning,
             gradientStart = BrandGradientStart,
             gradientEnd = BrandGradientEnd,
-            cardBorder = CardBorderLight
+            cardBorder = CardBorderLight,
+            ballUnselectedStart = Color(0xFFFAFAFA),
+            ballUnselectedEnd = Color(0xFFF0F0F0),
+            ballUnselectedBorder = Color(0xFFE2E8F0)
         )
     }
 

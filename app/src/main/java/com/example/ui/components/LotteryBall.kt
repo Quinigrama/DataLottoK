@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.LocalExtraColors
 
 @Composable
 fun LotteryBall(
@@ -55,6 +56,7 @@ fun LotteryBall(
     glowColor: Color = Color(0xFF34D399),
     modifier: Modifier = Modifier
 ) {
+    val extraColors = LocalExtraColors.current
     val infiniteTransition = rememberInfiniteTransition(label = "ball_pulse_transition")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1.05f,
@@ -70,11 +72,6 @@ fun LotteryBall(
         targetValue = if (isSelected) pulseScale else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "ball_scale"
-    )
-
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFFFFD700) else MaterialTheme.colorScheme.surfaceVariant,
-        label = "ball_bg"
     )
 
     val textColor by animateColorAsState(
@@ -116,15 +113,22 @@ fun LotteryBall(
                         )
                     )
                 } else {
-                    Modifier.background(backgroundColor)
+                    Modifier.background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                extraColors.ballUnselectedStart,
+                                extraColors.ballUnselectedEnd
+                            )
+                        )
+                    )
                 }
             )
             .border(
-                width = if (isSelected) 2.dp else 1.dp,
+                width = 2.dp,
                 color = if (isSelected) {
                     Color(0xFFFF8F00)
                 } else {
-                    MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                    extraColors.ballUnselectedBorder
                 },
                 shape = shape
             )

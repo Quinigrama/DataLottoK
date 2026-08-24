@@ -1,6 +1,7 @@
 package com.example.data.model
 
 import androidx.compose.ui.graphics.Color
+import com.example.logic.GridLayout
 
 /**
  * Modelo de datos genérico para juegos de lotería.
@@ -19,6 +20,9 @@ data class GameConfig(
     val glowColor: Color = Color(0xFF34D399),
     val containerColor: Color = Color(0xFFD1FAE5),
     val onContainerColor: Color = Color(0xFF065F46),
+    // Layouts de cuadrícula oficial
+    val numbersLayout: GridLayout = GridLayout.Standard(columns = 7),
+    val secondaryLayout: GridLayout? = null,
     // Soporte para matriz secundaria futura
     val hasSecondaryMatrix: Boolean = false,
     val secondaryMinNumber: Int? = null,
@@ -62,6 +66,7 @@ data class GameConfig(
             glowColor = Color(0xFF34D399),
             containerColor = Color(0xFFD1FAE5),
             onContainerColor = Color(0xFF065F46),
+            numbersLayout = GridLayout.DecadeColumn,
             hasSecondaryMatrix = false,
             drawDays = listOf(1, 2, 3, 4, 5, 6, 0),
             costPerBet = 0.50
@@ -80,6 +85,7 @@ data class GameConfig(
             glowColor = Color(0xFFFBBF24),
             containerColor = Color(0xFFFEF3C7),
             onContainerColor = Color(0xFF78350F),
+            numbersLayout = GridLayout.DecadeColumn,
             hasSecondaryMatrix = false,
             drawDays = listOf(1, 4, 6),
             costPerBet = 1.00
@@ -98,6 +104,8 @@ data class GameConfig(
             glowColor = Color(0xFF60A5FA),
             containerColor = Color(0xFFDBEAFE),
             onContainerColor = Color(0xFF1E40AF),
+            numbersLayout = GridLayout.ColumnChunk(chunkSize = 9),
+            secondaryLayout = GridLayout.ColumnChunk(chunkSize = 4),
             hasSecondaryMatrix = true,
             secondaryMinNumber = 1,
             secondaryMaxNumber = 12,
