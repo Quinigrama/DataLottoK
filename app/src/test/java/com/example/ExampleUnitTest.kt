@@ -11,33 +11,56 @@ class ExampleUnitTest {
   @Test
   fun testBonolotoGenerator() {
     val bonoloto = GameConfig.Bonoloto
-    val combination = LotteryGenerator.generateSimple(bonoloto)
+    val result = LotteryGenerator.generateSimple(bonoloto)
 
-    assertEquals(6, combination.size)
-    assertEquals(6, combination.toSet().size)
-    assertTrue(combination.all { it in 1..49 })
-    assertEquals(combination.sorted(), combination)
+    assertEquals(6, result.primaryNumbers.size)
+    assertEquals(6, result.primaryNumbers.toSet().size)
+    assertTrue(result.primaryNumbers.all { it in 1..49 })
+    assertEquals(result.primaryNumbers.sorted(), result.primaryNumbers)
+    assertTrue(result.secondaryNumbers.isEmpty())
   }
 
   @Test
   fun testLaPrimitivaGenerator() {
     val primitiva = GameConfig.LaPrimitiva
-    val combination = LotteryGenerator.generateSimple(primitiva)
+    val result = LotteryGenerator.generateSimple(primitiva)
 
-    assertEquals(6, combination.size)
-    assertEquals(6, combination.toSet().size)
-    assertTrue(combination.all { it in 1..49 })
-    assertEquals(combination.sorted(), combination)
+    assertEquals(6, result.primaryNumbers.size)
+    assertEquals(6, result.primaryNumbers.toSet().size)
+    assertTrue(result.primaryNumbers.all { it in 1..49 })
+    assertEquals(result.primaryNumbers.sorted(), result.primaryNumbers)
     assertEquals("primitiva", primitiva.id)
     assertEquals("La Primitiva", primitiva.name)
     assertEquals("🇪🇸", primitiva.flagEmoji)
+    assertTrue(result.secondaryNumbers.isEmpty())
+  }
+
+  @Test
+  fun testEuromillonesGenerator() {
+    val euromillones = GameConfig.Euromillones
+    val result = LotteryGenerator.generateSimple(euromillones)
+
+    assertEquals(5, result.primaryNumbers.size)
+    assertEquals(5, result.primaryNumbers.toSet().size)
+    assertTrue(result.primaryNumbers.all { it in 1..50 })
+    assertEquals(result.primaryNumbers.sorted(), result.primaryNumbers)
+
+    assertTrue(euromillones.hasSecondaryMatrix)
+    assertEquals(2, result.secondaryNumbers.size)
+    assertEquals(2, result.secondaryNumbers.toSet().size)
+    assertTrue(result.secondaryNumbers.all { it in 1..12 })
+    assertEquals(result.secondaryNumbers.sorted(), result.secondaryNumbers)
+    assertEquals("euromillones", euromillones.id)
+    assertEquals("Euromillones", euromillones.name)
+    assertEquals("🇪🇺", euromillones.flagEmoji)
   }
 
   @Test
   fun testGameConfigLookup() {
-    assertEquals(2, GameConfig.AvailableGames.size)
+    assertEquals(3, GameConfig.AvailableGames.size)
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("bonoloto"))
     assertEquals(GameConfig.LaPrimitiva, GameConfig.findById("primitiva"))
+    assertEquals(GameConfig.Euromillones, GameConfig.findById("euromillones"))
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("unknown_game"))
   }
 
@@ -53,4 +76,5 @@ class ExampleUnitTest {
     assertEquals(emptyList<Int>(), converters.toIntList(null))
   }
 }
+
 

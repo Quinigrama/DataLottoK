@@ -24,6 +24,9 @@ class LotteryViewModel(
     private val _selectedNumbers = MutableStateFlow<Set<Int>>(emptySet())
     val selectedNumbers: StateFlow<Set<Int>> = _selectedNumbers.asStateFlow()
 
+    private val _selectedSecondaryNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedSecondaryNumbers: StateFlow<Set<Int>> = _selectedSecondaryNumbers.asStateFlow()
+
     private val _ticketFilterGameId = MutableStateFlow<String?>(null)
     val ticketFilterGameId: StateFlow<String?> = _ticketFilterGameId.asStateFlow()
 
@@ -41,6 +44,7 @@ class LotteryViewModel(
         if (_currentGame.value.id != game.id) {
             _currentGame.value = game
             _selectedNumbers.value = emptySet()
+            _selectedSecondaryNumbers.value = emptySet()
             _userFeedback.value = "Cambiado a ${game.name}"
         }
     }
@@ -64,22 +68,51 @@ class LotteryViewModel(
         }
     }
 
+    fun toggleSecondaryNumber(number: Int) {
+        val game = _currentGame.value
+        if (!game.hasSecondaryMatrix) return
+
+        val currentSecondary = _selectedSecondaryNumbers.value
+        val maxSecondary = game.secondaryPickCount
+        val name = game.secondaryName ?: "números secundarios"
+
+        if (currentSecondary.contains(number)) {
+            _selectedSecondaryNumbers.value = currentSecondary - number
+        } else {
+            if (currentSecondary.size < maxSecondary) {
+                _selectedSecondaryNumbers.value = currentSecondary + number
+            } else {
+                _userFeedback.value = "Ya has seleccionado $maxSecondary $name"
+            }
+        }
+    }
+
     fun generateCombination() {
-        val generated = LotteryGenerator.generateSimple(_currentGame.value)
-        _selectedNumbers.value = generated.toSet()
-        _userFeedback.value = "🍀 Combinación generada para ${_currentGame.value.name}"
+        val game = _currentGame.value
+        val result = LotteryGenerator.generateSimple(game)
+        _selectedNumbers.value = result.primaryNumbers.toSet()
+        _selectedSecondaryNumbers.value = result.secondaryNumbers.toSet()
+        _userFeedback.value = "🍀 Combinación generada para ${game.name}"
     }
 
     fun clearSelection() {
         _selectedNumbers.value = emptySet()
+        _selectedSecondaryNumbers.value = emptySet()
     }
 
     fun saveCurrentTicket(onSuccess: () -> Unit = {}) {
         val game = _currentGame.value
         val numbers = _selectedNumbers.value.toList().sorted()
+        val secondaryNumbers = _selectedSecondaryNumbers.value.toList().sorted()
 
         if (numbers.size != game.pickCount) {
             _userFeedback.value = "Debes seleccionar exactamente ${game.pickCount} números para guardar el boleto"
+            return
+        }
+
+        if (game.hasSecondaryMatrix && secondaryNumbers.size != game.secondaryPickCount) {
+            val name = game.secondaryName ?: "estrellas"
+            _userFeedback.value = "Debes seleccionar exactamente ${game.secondaryPickCount} $name para guardar el boleto"
             return
         }
 
@@ -88,6 +121,7 @@ class LotteryViewModel(
                 gameId = game.id,
                 gameName = game.name,
                 numbers = numbers,
+                secondaryNumbers = if (game.hasSecondaryMatrix) secondaryNumbers else emptyList(),
                 timestamp = System.currentTimeMillis()
             )
             repository.saveTicket(ticket)

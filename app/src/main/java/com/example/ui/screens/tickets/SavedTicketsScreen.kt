@@ -313,19 +313,48 @@ fun TicketCard(
             // Balls representation with game specific colors
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val sortedNumbers = ticket.numbers.sorted()
-                sortedNumbers.forEach { num ->
+                sortedNumbers.forEachIndexed { index, num ->
                     LotteryBall(
                         number = num,
                         isSelected = true,
-                        size = 40.dp,
+                        size = if (ticket.secondaryNumbers.isNotEmpty()) 36.dp else 40.dp,
                         primaryColor = gameConfig.primaryColor,
                         darkColor = gameConfig.darkColor,
                         glowColor = gameConfig.glowColor
                     )
+                    if (index < sortedNumbers.size - 1) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                }
+
+                if (ticket.secondaryNumbers.isNotEmpty()) {
+                    Text(
+                        text = "+",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = gameConfig.secondaryPrimaryColor,
+                        modifier = Modifier.padding(horizontal = 6.dp)
+                    )
+
+                    val sortedSecondary = ticket.secondaryNumbers.sorted()
+                    sortedSecondary.forEachIndexed { index, secNum ->
+                        LotteryBall(
+                            number = secNum,
+                            isSelected = true,
+                            size = 36.dp,
+                            isStar = true,
+                            primaryColor = gameConfig.secondaryPrimaryColor,
+                            darkColor = gameConfig.secondaryDarkColor,
+                            glowColor = gameConfig.secondaryGlowColor
+                        )
+                        if (index < sortedSecondary.size - 1) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                    }
                 }
             }
         }

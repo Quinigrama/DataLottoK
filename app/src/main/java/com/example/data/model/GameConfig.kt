@@ -24,7 +24,13 @@ data class GameConfig(
     val secondaryMinNumber: Int? = null,
     val secondaryMaxNumber: Int? = null,
     val secondaryPickCount: Int = 0,
-    val secondaryName: String? = null
+    val secondaryName: String? = null,
+    val secondaryEmoji: String? = null,
+    val secondaryPrimaryColor: Color = Color(0xFFEAB308),
+    val secondaryDarkColor: Color = Color(0xFFCA8A04),
+    val secondaryGlowColor: Color = Color(0xFFFDE047),
+    val secondaryContainerColor: Color = Color(0xFFFEF08A),
+    val secondaryOnContainerColor: Color = Color(0xFF854D0E)
 ) {
     companion object {
         val Bonoloto = GameConfig(
@@ -59,7 +65,33 @@ data class GameConfig(
             hasSecondaryMatrix = false
         )
 
-        val AvailableGames = listOf(Bonoloto, LaPrimitiva)
+        val Euromillones = GameConfig(
+            id = "euromillones",
+            name = "Euromillones",
+            flagEmoji = "🇪🇺",
+            minNumber = 1,
+            maxNumber = 50,
+            pickCount = 5,
+            currency = "€",
+            primaryColor = Color(0xFF2563EB),     // Azul Real Europeo
+            darkColor = Color(0xFF1D4ED8),
+            glowColor = Color(0xFF60A5FA),
+            containerColor = Color(0xFFDBEAFE),
+            onContainerColor = Color(0xFF1E40AF),
+            hasSecondaryMatrix = true,
+            secondaryMinNumber = 1,
+            secondaryMaxNumber = 12,
+            secondaryPickCount = 2,
+            secondaryName = "Estrellas",
+            secondaryEmoji = "⭐",
+            secondaryPrimaryColor = Color(0xFFEAB308),
+            secondaryDarkColor = Color(0xFFCA8A04),
+            secondaryGlowColor = Color(0xFFFDE047),
+            secondaryContainerColor = Color(0xFFFEF08A),
+            secondaryOnContainerColor = Color(0xFF854D0E)
+        )
+
+        val AvailableGames = listOf(Bonoloto, LaPrimitiva, Euromillones)
 
         fun findById(id: String): GameConfig {
             return AvailableGames.firstOrNull { it.id.equals(id, ignoreCase = true) } ?: Bonoloto
