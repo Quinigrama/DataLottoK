@@ -75,6 +75,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
+import com.example.logic.ReducedSystemCalculator
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandGradientEnd
@@ -388,6 +389,28 @@ fun TicketCard(
                                 color = BrandIndigo
                             )
                         }
+                    } else if (ticket.strategy == "reducida") {
+                        val system = ReducedSystemCalculator.findSystem(ticket.gameId, ticket.systemId)
+                        val label = if (system != null) {
+                            "🧩 Reducida de ${system.baseNumbersCount} (${system.combinationsCount} apuestas)"
+                        } else {
+                            "🧩 Sistema Reducido"
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    BrandIndigo.copy(alpha = 0.12f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandIndigo
+                            )
+                        }
                     }
 
                     Text(
@@ -461,14 +484,19 @@ fun TicketCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Validation status and Action
-            if (ticket.strategy == "multiple") {
+            if (ticket.strategy == "multiple" || ticket.strategy == "reducida") {
+                val infoText = if (ticket.strategy == "multiple") {
+                    "ℹ️ La validación de boletos múltiples llegará en una fase posterior"
+                } else {
+                    "ℹ️ La validación de boletos con sistema reducido llegará en una fase posterior"
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "ℹ️ La validación de boletos múltiples llegará en una fase posterior",
+                        text = infoText,
                         fontSize = 11.5.sp,
                         color = Color(0xFF94A3B8),
                         fontWeight = FontWeight.Medium,

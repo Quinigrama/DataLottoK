@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
 import com.example.logic.MultipleTicketCalculator
+import com.example.logic.ReducedSystemCalculator
 import com.example.logic.StatisticsEngine
 import com.example.ui.components.LotteryBall
 import com.example.ui.theme.BrandDanger
@@ -92,6 +93,7 @@ fun GeneratorScreen(
 ) {
     val currentGame by viewModel.currentGame.collectAsStateWithLifecycle()
     val strategy by viewModel.strategy.collectAsStateWithLifecycle()
+    val reducedSystemId by viewModel.reducedSystemId.collectAsStateWithLifecycle()
     val multipleNumberCount by viewModel.multipleNumberCount.collectAsStateWithLifecycle()
     val multipleSecondaryCount by viewModel.multipleSecondaryCount.collectAsStateWithLifecycle()
     val selectedNumbers by viewModel.selectedNumbers.collectAsStateWithLifecycle()
@@ -110,6 +112,14 @@ fun GeneratorScreen(
 
     val multipleOptions = remember(currentGame) {
         MultipleTicketCalculator.getOptions(currentGame)
+    }
+
+    val reducedSystems = remember(currentGame) {
+        ReducedSystemCalculator.getSystems(currentGame.id)
+    }
+
+    val selectedReducedSystem = remember(currentGame, reducedSystemId) {
+        ReducedSystemCalculator.findSystem(currentGame.id, reducedSystemId)
     }
 
     val (liveBets, liveCost, liveError) = remember(currentGame, strategy, multipleNumberCount, multipleSecondaryCount) {
@@ -134,10 +144,14 @@ fun GeneratorScreen(
     val isMultipleSecondaryComplete = !currentGame.hasSecondaryMatrix ||
             (selectedSecondaryNumbers.size == multipleSecondaryCount)
 
-    val isComplete = if (strategy == "multiple") {
-        isMultiplePrimaryComplete && isMultipleSecondaryComplete
-    } else {
-        isSimplePrimaryComplete && isSimpleSecondaryComplete
+    val isReducedPrimaryComplete = selectedNumbers.size == (selectedReducedSystem?.baseNumbersCount ?: 0)
+    val isReducedSecondaryComplete = !currentGame.hasSecondaryMatrix ||
+            (selectedSecondaryNumbers.size == currentGame.secondaryPickCount)
+
+    val isComplete = when (strategy) {
+        "multiple" -> isMultiplePrimaryComplete && isMultipleSecondaryComplete
+        "reducida" -> isReducedPrimaryComplete && isReducedSecondaryComplete
+        else -> isSimplePrimaryComplete && isSimpleSecondaryComplete
     }
 
     val sortedSelected = selectedNumbers.toList().sorted()
@@ -299,7 +313,7 @@ fun GeneratorScreen(
                     }
                 }
 
-                // Strategy Selector ("🎲 Simple" / "🎯 Múltiple")
+                // Strategy Selector ("🎲 Simple" / "🎯 Múltiple" / "🧩 Reducida")
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -317,6 +331,7 @@ fun GeneratorScreen(
                     ) {
                         val isSimple = strategy == "simple"
                         val isMultiple = strategy == "multiple"
+                        val isReduced = strategy == "reducida"
 
                         Box(
                             modifier = Modifier
@@ -332,7 +347,7 @@ fun GeneratorScreen(
                                 text = "🎲 Simple",
                                 fontWeight = if (isSimple) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isSimple) gamePrimaryColor else Color(0xFF64748B),
-                                fontSize = 13.5.sp
+                                fontSize = 13.sp
                             )
                         }
 
@@ -350,7 +365,25 @@ fun GeneratorScreen(
                                 text = "🎯 Múltiple",
                                 fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isMultiple) gamePrimaryColor else Color(0xFF64748B),
-                                fontSize = 13.5.sp
+                                fontSize = 13.sp
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isReduced) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
+                                .clickable { viewModel.setStrategy("reducida") }
+                                .padding(vertical = 8.dp)
+                                .testTag("strategy_reducida_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🧩 Reducida",
+                                fontWeight = if (isReduced) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isReduced) gamePrimaryColor else Color(0xFF64748B),
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -515,6 +548,92 @@ fun GeneratorScreen(
                         }
                     }
 
+                    // Reduced Configuration Card (only in reduced strategy)
+                    if (strategy == "reducida") {
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                                    .testTag("reduced_config_card"),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = "Configuración de Sistema Reducido",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandDark
+                                    )
+
+                                    // System selector chips
+                                    FlowRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        reducedSystems.forEach { sys ->
+                                            val isSelected = (selectedReducedSystem?.id == sys.id)
+                                            FilterChip(
+                                                selected = isSelected,
+                                                onClick = { viewModel.setReducedSystemId(sys.id) },
+                                                label = {
+                                                    Text(
+                                                        text = "${sys.baseNumbersCount} núm. · ${sys.guarantee} aciertos",
+                                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                        fontSize = 12.sp
+                                                    )
+                                                },
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = currentGame.containerColor,
+                                                    selectedLabelColor = currentGame.onContainerColor
+                                                ),
+                                                modifier = Modifier.testTag("reduced_chip_${sys.id}")
+                                            )
+                                        }
+                                    }
+
+                                    selectedReducedSystem?.let { sys ->
+                                        Text(
+                                            text = sys.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF475569),
+                                            lineHeight = 16.sp
+                                        )
+
+                                        val totalCost = ReducedSystemCalculator.totalCost(currentGame, sys)
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFFF8FAFC), RoundedCornerShape(10.dp))
+                                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Combinaciones cubiertas:",
+                                                fontSize = 12.5.sp,
+                                                color = Color(0xFF64748B),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            Text(
+                                                text = "${sys.combinationsCount} apuestas · ${String.format(Locale.getDefault(), "%.2f", totalCost)} €",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandDark
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Header summary card (Selection status & Live preview of chosen balls)
                     item {
                         Card(
@@ -547,6 +666,23 @@ fun GeneratorScreen(
                                         } else {
                                             Text(
                                                 text = "${selectedNumbers.size}/$multipleNumberCount números seleccionados",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        }
+                                    } else if (strategy == "reducida") {
+                                        val baseCount = selectedReducedSystem?.baseNumbersCount ?: 0
+                                        if (currentGame.hasSecondaryMatrix) {
+                                            Text(
+                                                text = "${selectedNumbers.size}/$baseCount núm. • ${selectedSecondaryNumbers.size}/${currentGame.secondaryPickCount} ${currentGame.secondaryName?.lowercase() ?: "estrellas"}",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (isComplete) gamePrimaryColor else BrandDark
+                                            )
+                                        } else {
+                                            Text(
+                                                text = "${selectedNumbers.size}/$baseCount números seleccionados",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = if (isComplete) gamePrimaryColor else BrandDark
@@ -593,8 +729,15 @@ fun GeneratorScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                val targetPrimaryCount = if (strategy == "multiple") multipleNumberCount else currentGame.pickCount
-                                val targetSecondaryCount = if (strategy == "multiple") multipleSecondaryCount else (if (currentGame.hasSecondaryMatrix) currentGame.secondaryPickCount else 0)
+                                val targetPrimaryCount = when (strategy) {
+                                    "multiple" -> multipleNumberCount
+                                    "reducida" -> (selectedReducedSystem?.baseNumbersCount ?: currentGame.pickCount)
+                                    else -> currentGame.pickCount
+                                }
+                                val targetSecondaryCount = when (strategy) {
+                                    "multiple" -> multipleSecondaryCount
+                                    else -> (if (currentGame.hasSecondaryMatrix) currentGame.secondaryPickCount else 0)
+                                }
                                 val totalPick = targetPrimaryCount + targetSecondaryCount
                                 val totalSelected = selectedNumbers.size + if (currentGame.hasSecondaryMatrix) selectedSecondaryNumbers.size else 0
 
@@ -654,6 +797,56 @@ fun GeneratorScreen(
                                                         primaryColor = currentGame.secondaryPrimaryColor,
                                                         darkColor = currentGame.secondaryDarkColor,
                                                         glowColor = currentGame.secondaryGlowColor
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (strategy == "reducida") {
+                                    if (selectedNumbers.isEmpty()) {
+                                        Text(
+                                            text = "Toca los números en la cuadrícula para seleccionar los ${selectedReducedSystem?.baseNumbersCount ?: 0} números base",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color(0xFF64748B),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                            modifier = Modifier.padding(vertical = 6.dp)
+                                        )
+                                    } else {
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            sortedSelected.forEach { num ->
+                                                LotteryBall(
+                                                    number = num,
+                                                    isSelected = true,
+                                                    size = 36.dp,
+                                                    primaryColor = currentGame.primaryColor,
+                                                    darkColor = currentGame.darkColor,
+                                                    glowColor = currentGame.glowColor,
+                                                    onClick = { viewModel.toggleNumber(num) }
+                                                )
+                                            }
+
+                                            if (currentGame.hasSecondaryMatrix && sortedSecondary.isNotEmpty()) {
+                                                Text(
+                                                    text = "+",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 18.sp,
+                                                    color = currentGame.secondaryPrimaryColor,
+                                                    modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 2.dp)
+                                                )
+                                                sortedSecondary.forEach { secNum ->
+                                                    LotteryBall(
+                                                        number = secNum,
+                                                        isSelected = true,
+                                                        size = 36.dp,
+                                                        isStar = true,
+                                                        primaryColor = currentGame.secondaryPrimaryColor,
+                                                        darkColor = currentGame.secondaryDarkColor,
+                                                        glowColor = currentGame.secondaryGlowColor,
+                                                        onClick = { viewModel.toggleSecondaryNumber(secNum) }
                                                     )
                                                 }
                                             }
@@ -847,8 +1040,8 @@ fun GeneratorScreen(
                         }
                     }
 
-                    // Primary Numbers Grid Card (only in Simple Strategy)
-                    if (strategy == "simple") {
+                    // Primary Numbers Grid Card (only in Simple or Reduced Strategy)
+                    if (strategy == "simple" || strategy == "reducida") {
                         item {
                             Card(
                                 modifier = Modifier
@@ -878,11 +1071,17 @@ fun GeneratorScreen(
                                             fontWeight = FontWeight.Bold,
                                             color = BrandDark
                                         )
+                                        val primaryLabel = if (strategy == "reducida") {
+                                            "${selectedNumbers.size}/${selectedReducedSystem?.baseNumbersCount ?: 0}"
+                                        } else {
+                                            "${selectedNumbers.size}/${currentGame.pickCount}"
+                                        }
+                                        val isPrimaryCompleteForGrid = if (strategy == "reducida") isReducedPrimaryComplete else isSimplePrimaryComplete
                                         Text(
-                                            text = "${selectedNumbers.size}/${currentGame.pickCount}",
+                                            text = primaryLabel,
                                             style = MaterialTheme.typography.labelMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isSimplePrimaryComplete) gamePrimaryColor else Color(0xFF64748B)
+                                            color = if (isPrimaryCompleteForGrid) gamePrimaryColor else Color(0xFF64748B)
                                         )
                                     }
 
@@ -1008,24 +1207,32 @@ fun GeneratorScreen(
                             // Generar Combinación Button
                             Button(
                                 onClick = {
-                                    if (strategy == "multiple") {
-                                        viewModel.generateMultipleCombination()
-                                    } else {
-                                        viewModel.generateCombination()
+                                    when (strategy) {
+                                        "multiple" -> viewModel.generateMultipleCombination()
+                                        "reducida" -> viewModel.generateReducedCombinations()
+                                        else -> viewModel.generateCombination()
                                     }
                                 },
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
                                     .testTag("generate_button"),
-                                enabled = liveError == null,
+                                enabled = if (strategy == "reducida") {
+                                    isReducedPrimaryComplete && isReducedSecondaryComplete
+                                } else {
+                                    liveError == null
+                                },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = gamePrimaryColor
                                 )
                             ) {
                                 Text(
-                                    text = if (strategy == "multiple") "🎯 Generar Múltiple" else "🍀 Generar Combinación",
+                                    text = when (strategy) {
+                                        "multiple" -> "🎯 Generar Múltiple"
+                                        "reducida" -> "🧩 Generar Reducida"
+                                        else -> "🍀 Generar Combinación"
+                                    },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
                                 )
@@ -1056,7 +1263,7 @@ fun GeneratorScreen(
                                 .height(48.dp)
                                 .testTag("save_ticket_button"),
                             shape = RoundedCornerShape(12.dp),
-                            enabled = isComplete && liveError == null,
+                            enabled = isComplete && (strategy != "multiple" || liveError == null),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = gamePrimaryColor,
                                 disabledContainerColor = Color(0xFFF1F5F9)
@@ -1069,10 +1276,14 @@ fun GeneratorScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (strategy == "multiple") "💾 Guardar Boleto Múltiple (${currentGame.name})" else "💾 Guardar Boleto (${currentGame.name})",
+                                text = when (strategy) {
+                                    "multiple" -> "💾 Guardar Boleto Múltiple (${currentGame.name})"
+                                    "reducida" -> "💾 Guardar Boleto Reducido (${currentGame.name})"
+                                    else -> "💾 Guardar Boleto (${currentGame.name})"
+                                },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
-                                color = if (isComplete && liveError == null) Color.White else Color(0xFF94A3B8)
+                                color = if (isComplete && (strategy != "multiple" || liveError == null)) Color.White else Color(0xFF94A3B8)
                             )
                         }
                     }

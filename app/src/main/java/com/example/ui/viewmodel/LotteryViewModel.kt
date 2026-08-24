@@ -9,6 +9,8 @@ import com.example.data.repository.TicketRepository
 import com.example.logic.LotteryGenerator
 import com.example.logic.MultipleTicketCalculator
 import com.example.logic.PrizeCalculator
+import com.example.logic.ReducedSystemCalculator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +25,13 @@ class LotteryViewModel(
     private val _currentGame = MutableStateFlow(GameConfig.Bonoloto)
     val currentGame: StateFlow<GameConfig> = _currentGame.asStateFlow()
 
-    // Estrategia de juego: "simple" o "multiple"
+    // Estrategia de juego: "simple", "multiple" o "reducida"
     private val _strategy = MutableStateFlow("simple")
     val strategy: StateFlow<String> = _strategy.asStateFlow()
+
+    // Sistema reducido activo
+    private val _reducedSystemId = MutableStateFlow<String?>(null)
+    val reducedSystemId: StateFlow<String?> = _reducedSystemId.asStateFlow()
 
     // Opciones para apuesta múltiple
     private val initialMultipleOptions = MultipleTicketCalculator.getOptions(GameConfig.Bonoloto)
@@ -76,6 +82,21 @@ class LotteryViewModel(
 
     fun setStrategy(value: String) {
         _strategy.value = value
+        if (value == "reducida") {
+            val systems = ReducedSystemCalculator.getSystems(_currentGame.value.id)
+            val currentSys = systems.find { it.id == _reducedSystemId.value }
+            if (currentSys == null && systems.isNotEmpty()) {
+                _reducedSystemId.value = systems.first().id
+            }
+        }
+    }
+
+    fun setReducedSystemId(id: String) {
+        _reducedSystemId.value = id
+        val system = ReducedSystemCalculator.findSystem(_currentGame.value.id, id)
+        if (system != null && _selectedNumbers.value.size > system.baseNumbersCount) {
+            _selectedNumbers.value = _selectedNumbers.value.take(system.baseNumbersCount).toSet()
+        }
     }
 
     fun setMultipleNumberCount(n: Int) {
@@ -105,6 +126,8 @@ class LotteryViewModel(
             _multipleSecondaryCount.value = options.defaultSecondary
             _multipleBets.value = 0
             _multipleCost.value = 0.0
+            val systems = ReducedSystemCalculator.getSystems(game.id)
+            _reducedSystemId.value = systems.firstOrNull()?.id
             _userFeedback.value = "Cambiado a ${game.name}"
         }
     }
@@ -116,14 +139,19 @@ class LotteryViewModel(
     fun toggleNumber(number: Int) {
         val currentSet = _selectedNumbers.value
         val game = _currentGame.value
+        val maxLimit = if (_strategy.value == "reducida") {
+            ReducedSystemCalculator.findSystem(game.id, _reducedSystemId.value)?.baseNumbersCount ?: game.pickCount
+        } else {
+            game.pickCount
+        }
 
         if (currentSet.contains(number)) {
             _selectedNumbers.value = currentSet - number
         } else {
-            if (currentSet.size < game.pickCount) {
+            if (currentSet.size < maxLimit) {
                 _selectedNumbers.value = currentSet + number
             } else {
-                _userFeedback.value = "Ya has seleccionado ${game.pickCount} números"
+                _userFeedback.value = "Ya has seleccionado $maxLimit números"
             }
         }
     }
@@ -174,6 +202,39 @@ class LotteryViewModel(
         }
     }
 
+    fun generateReducedCombinations() {
+        val game = _currentGame.value
+        val system = ReducedSystemCalculator.findSystem(game.id, _reducedSystemId.value)
+        if (system == null) {
+            _userFeedback.value = "Selecciona un sistema reducido válido"
+            return
+        }
+
+        if (_selectedNumbers.value.size != system.baseNumbersCount) {
+            _userFeedback.value = "Debes seleccionar exactamente ${system.baseNumbersCount} números base para este sistema"
+            return
+        }
+
+        if (game.hasSecondaryMatrix && _selectedSecondaryNumbers.value.size != game.secondaryPickCount) {
+            val name = game.secondaryName ?: "estrellas"
+            _userFeedback.value = "Debes seleccionar exactamente ${game.secondaryPickCount} $name fijas"
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                ReducedSystemCalculator.generate(
+                    game = game,
+                    system = system,
+                    baseNumbers = _selectedNumbers.value.toList()
+                )
+                _userFeedback.value = "🧩 Sistema reducido generado: ${system.combinationsCount} apuestas listas para guardar"
+            } catch (e: Exception) {
+                _userFeedback.value = e.message ?: "Error al generar el sistema reducido"
+            }
+        }
+    }
+
     fun clearSelection() {
         _selectedNumbers.value = emptySet()
         _selectedSecondaryNumbers.value = emptySet()
@@ -199,6 +260,21 @@ class LotteryViewModel(
                     return
                 }
             }
+        } else if (currentStrategy == "reducida") {
+            val system = ReducedSystemCalculator.findSystem(game.id, _reducedSystemId.value)
+            if (system == null) {
+                _userFeedback.value = "Selecciona un sistema reducido válido"
+                return
+            }
+            if (numbers.size != system.baseNumbersCount) {
+                _userFeedback.value = "Debes seleccionar exactamente ${system.baseNumbersCount} números base para guardar el boleto"
+                return
+            }
+            if (game.hasSecondaryMatrix && secondaryNumbers.size != game.secondaryPickCount) {
+                val name = game.secondaryName ?: "estrellas"
+                _userFeedback.value = "Debes seleccionar exactamente ${game.secondaryPickCount} $name para guardar el boleto"
+                return
+            }
         } else {
             if (numbers.size != game.pickCount) {
                 _userFeedback.value = "Debes seleccionar exactamente ${game.pickCount} números para guardar el boleto"
@@ -219,6 +295,7 @@ class LotteryViewModel(
                 numbers = numbers,
                 secondaryNumbers = if (game.hasSecondaryMatrix) secondaryNumbers else emptyList(),
                 strategy = currentStrategy,
+                systemId = if (currentStrategy == "reducida") _reducedSystemId.value else null,
                 timestamp = System.currentTimeMillis()
             )
             repository.saveTicket(ticket)

@@ -13,6 +13,7 @@ data class SavedTicket(
     val secondaryNumbers: List<Int> = emptyList(),
     val timestamp: Long = System.currentTimeMillis(),
     val strategy: String = "simple",
+    val systemId: String? = null,
     val isValidated: Boolean = false,
     val validatedHits: Int? = null,
     val validatedStarHits: Int? = null,
