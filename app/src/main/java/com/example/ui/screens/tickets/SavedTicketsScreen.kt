@@ -1,11 +1,17 @@
 package com.example.ui.screens.tickets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,14 +22,21 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,9 +45,11 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -55,6 +70,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
@@ -63,6 +80,8 @@ import com.example.ui.theme.BrandDark
 import com.example.ui.theme.BrandGradientEnd
 import com.example.ui.theme.BrandGradientStart
 import com.example.ui.theme.BrandIndigo
+import com.example.ui.theme.BrandSuccess
+import com.example.ui.theme.BrandWarning
 import com.example.ui.viewmodel.LotteryViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -79,6 +98,10 @@ fun SavedTicketsScreen(
     val filterGameId by viewModel.ticketFilterGameId.collectAsStateWithLifecycle()
     val feedbackMessage by viewModel.userFeedback.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val ticketBeingValidated by viewModel.ticketBeingValidated.collectAsStateWithLifecycle()
+    val winningNumbers by viewModel.winningNumbers.collectAsStateWithLifecycle()
+    val winningSecondaryNumbers by viewModel.winningSecondaryNumbers.collectAsStateWithLifecycle()
 
     LaunchedEffect(feedbackMessage) {
         feedbackMessage?.let { msg ->
@@ -251,7 +274,8 @@ fun SavedTicketsScreen(
                                 ) { ticket ->
                                     TicketCard(
                                         ticket = ticket,
-                                        onDelete = { viewModel.deleteTicket(ticket) }
+                                        onDelete = { viewModel.deleteTicket(ticket) },
+                                        onValidate = { viewModel.openValidationDialog(ticket) }
                                     )
                                 }
                             }
@@ -260,6 +284,31 @@ fun SavedTicketsScreen(
                 }
             }
         }
+
+        // Dialog de Validación Manual
+        ticketBeingValidated?.let { ticket ->
+            TicketValidationDialog(
+                ticket = ticket,
+                winningNumbers = winningNumbers,
+                winningSecondaryNumbers = winningSecondaryNumbers,
+                onToggleWinningNumber = { num, maxCount ->
+                    viewModel.toggleWinningNumber(num, maxCount)
+                },
+                onToggleWinningSecondaryNumber = { num, maxCount ->
+                    viewModel.toggleWinningSecondaryNumber(num, maxCount)
+                },
+                onConfirm = {
+                    viewModel.validateTicket(
+                        ticket = ticket,
+                        winningNumbers = winningNumbers.toList().sorted(),
+                        winningSecondary = winningSecondaryNumbers.toList().sorted()
+                    )
+                },
+                onDismiss = {
+                    viewModel.closeValidationDialog()
+                }
+            )
+        }
     }
 }
 
@@ -267,6 +316,7 @@ fun SavedTicketsScreen(
 fun TicketCard(
     ticket: SavedTicket,
     onDelete: () -> Unit,
+    onValidate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gameConfig = remember(ticket.gameId) {
@@ -279,6 +329,8 @@ fun TicketCard(
     val formattedDate = remember(ticket.timestamp) {
         dateFormat.format(Date(ticket.timestamp))
     }
+
+    val isWinning = ticket.isValidated && ticket.prizeLabel != null && !ticket.prizeLabel.startsWith("Sin premio")
 
     Card(
         modifier = modifier
@@ -293,6 +345,7 @@ fun TicketCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            // Header: Game badge, Date, and Delete button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -389,6 +442,418 @@ fun TicketCard(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(14.dp))
+            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Validation status and Action
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (ticket.isValidated) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    if (isWinning) BrandSuccess.copy(alpha = 0.15f) else Color(0xFFF1F5F9),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isWinning) Icons.Default.EmojiEvents else Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "✓ Validado",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isWinning) BrandSuccess else Color(0xFF64748B)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = ticket.prizeLabel ?: "Sin premio",
+                            fontSize = 12.sp,
+                            fontWeight = if (isWinning) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isWinning) BrandSuccess else Color(0xFF64748B),
+                            maxLines = 1
+                        )
+                    }
+
+                    // Re-validar button
+                    IconButton(
+                        onClick = onValidate,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .testTag("revalidate_ticket_${ticket.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Re-validar",
+                            tint = BrandIndigo,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Pendiente de validación",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8)
+                    )
+
+                    Button(
+                        onClick = onValidate,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BrandIndigo
+                        ),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .testTag("validate_ticket_${ticket.id}")
+                            .height(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Validar",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TicketValidationDialog(
+    ticket: SavedTicket,
+    winningNumbers: Set<Int>,
+    winningSecondaryNumbers: Set<Int>,
+    onToggleWinningNumber: (Int, Int) -> Unit,
+    onToggleWinningSecondaryNumber: (Int, Int) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val gameConfig = remember(ticket.gameId) {
+        GameConfig.findById(ticket.gameId)
+    }
+
+    val isPrimaryComplete = winningNumbers.size == gameConfig.pickCount
+    val isSecondaryComplete = !gameConfig.hasSecondaryMatrix || winningSecondaryNumbers.size == gameConfig.secondaryPickCount
+    val isValidationReady = isPrimaryComplete && isSecondaryComplete
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.90f)
+                .testTag("validation_dialog"),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                // Dialog Title Bar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Validar Boleto",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandDark
+                        )
+                        Text(
+                            text = "${gameConfig.flagEmoji} ${gameConfig.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = gameConfig.primaryColor
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.testTag("close_validation_dialog")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar",
+                            tint = BrandDark
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Official Draw Days Notice (No bloqueante)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF8FAFC)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = BrandIndigo,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Días de sorteo oficiales",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandIndigo
+                            )
+                            Text(
+                                text = "Este juego sortea: ${gameConfig.formatDrawDays()}",
+                                fontSize = 12.sp,
+                                color = Color(0xFF475569)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Scrollable Content for Winning Numbers Grid
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Played combination preview
+                    Text(
+                        text = "Tu combinación guardada:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF64748B)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ticket.numbers.sorted().forEach { num ->
+                            LotteryBall(
+                                number = num,
+                                isSelected = true,
+                                size = 32.dp,
+                                primaryColor = gameConfig.primaryColor,
+                                darkColor = gameConfig.darkColor,
+                                glowColor = gameConfig.glowColor
+                            )
+                        }
+
+                        if (ticket.secondaryNumbers.isNotEmpty()) {
+                            Text(
+                                text = "+",
+                                fontWeight = FontWeight.Bold,
+                                color = gameConfig.secondaryPrimaryColor
+                            )
+                            ticket.secondaryNumbers.sorted().forEach { secNum ->
+                                LotteryBall(
+                                    number = secNum,
+                                    isSelected = true,
+                                    size = 32.dp,
+                                    isStar = true,
+                                    primaryColor = gameConfig.secondaryPrimaryColor,
+                                    darkColor = gameConfig.secondaryDarkColor,
+                                    glowColor = gameConfig.secondaryGlowColor
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    HorizontalDivider(color = Color(0xFFE2E8F0))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Primary winning numbers section
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Números Ganadores:",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = BrandDark
+                        )
+                        Text(
+                            text = "${winningNumbers.size} / ${gameConfig.pickCount}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = if (isPrimaryComplete) BrandSuccess else BrandIndigo
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Primary numbers grid
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        for (i in gameConfig.minNumber..gameConfig.maxNumber) {
+                            val isSelected = winningNumbers.contains(i)
+                            LotteryBall(
+                                number = i,
+                                isSelected = isSelected,
+                                size = 38.dp,
+                                primaryColor = gameConfig.primaryColor,
+                                darkColor = gameConfig.darkColor,
+                                glowColor = gameConfig.glowColor,
+                                onClick = {
+                                    onToggleWinningNumber(i, gameConfig.pickCount)
+                                }
+                            )
+                        }
+                    }
+
+                    // Secondary winning numbers section (Euromillones)
+                    if (gameConfig.hasSecondaryMatrix && gameConfig.secondaryMaxNumber != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = Color(0xFFE2E8F0))
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${gameConfig.secondaryEmoji ?: "⭐"} ${gameConfig.secondaryName ?: "Estrellas"} Ganadoras:",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = BrandDark
+                            )
+                            Text(
+                                text = "${winningSecondaryNumbers.size} / ${gameConfig.secondaryPickCount}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = if (isSecondaryComplete) BrandSuccess else gameConfig.secondaryDarkColor
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            for (i in (gameConfig.secondaryMinNumber ?: 1)..gameConfig.secondaryMaxNumber) {
+                                val isSelected = winningSecondaryNumbers.contains(i)
+                                LotteryBall(
+                                    number = i,
+                                    isSelected = isSelected,
+                                    size = 38.dp,
+                                    isStar = true,
+                                    primaryColor = gameConfig.secondaryPrimaryColor,
+                                    darkColor = gameConfig.secondaryDarkColor,
+                                    glowColor = gameConfig.secondaryGlowColor,
+                                    onClick = {
+                                        onToggleWinningSecondaryNumber(i, gameConfig.secondaryPickCount)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Bottom Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("cancel_validation_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancelar", fontWeight = FontWeight.SemiBold)
+                    }
+
+                    Button(
+                        onClick = onConfirm,
+                        enabled = isValidationReady,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BrandIndigo
+                        ),
+                        modifier = Modifier
+                            .weight(1.4f)
+                            .height(48.dp)
+                            .testTag("confirm_validation_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Confirmar Validación",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -474,5 +939,6 @@ fun EmptyTicketsView(
         }
     }
 }
+
 
 

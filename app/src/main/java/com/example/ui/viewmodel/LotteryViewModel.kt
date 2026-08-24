@@ -7,6 +7,7 @@ import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
 import com.example.data.repository.TicketRepository
 import com.example.logic.LotteryGenerator
+import com.example.logic.PrizeCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,16 @@ class LotteryViewModel(
 
     private val _userFeedback = MutableStateFlow<String?>(null)
     val userFeedback: StateFlow<String?> = _userFeedback.asStateFlow()
+
+    // Estado para validación de boletos
+    private val _ticketBeingValidated = MutableStateFlow<SavedTicket?>(null)
+    val ticketBeingValidated: StateFlow<SavedTicket?> = _ticketBeingValidated.asStateFlow()
+
+    private val _winningNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    val winningNumbers: StateFlow<Set<Int>> = _winningNumbers.asStateFlow()
+
+    private val _winningSecondaryNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    val winningSecondaryNumbers: StateFlow<Set<Int>> = _winningSecondaryNumbers.asStateFlow()
 
     fun selectGame(game: GameConfig) {
         if (_currentGame.value.id != game.id) {
@@ -134,6 +145,78 @@ class LotteryViewModel(
         viewModelScope.launch {
             repository.deleteTicket(ticket)
             _userFeedback.value = "Boleto eliminado"
+        }
+    }
+
+    // Métodos para validación manual de boletos
+    fun openValidationDialog(ticket: SavedTicket) {
+        _ticketBeingValidated.value = ticket
+        _winningNumbers.value = emptySet()
+        _winningSecondaryNumbers.value = emptySet()
+    }
+
+    fun closeValidationDialog() {
+        _ticketBeingValidated.value = null
+        _winningNumbers.value = emptySet()
+        _winningSecondaryNumbers.value = emptySet()
+    }
+
+    fun toggleWinningNumber(number: Int, maxCount: Int) {
+        val current = _winningNumbers.value
+        if (current.contains(number)) {
+            _winningNumbers.value = current - number
+        } else {
+            if (current.size < maxCount) {
+                _winningNumbers.value = current + number
+            }
+        }
+    }
+
+    fun toggleWinningSecondaryNumber(number: Int, maxCount: Int) {
+        val current = _winningSecondaryNumbers.value
+        if (current.contains(number)) {
+            _winningSecondaryNumbers.value = current - number
+        } else {
+            if (current.size < maxCount) {
+                _winningSecondaryNumbers.value = current + number
+            }
+        }
+    }
+
+    fun validateTicket(
+        ticket: SavedTicket,
+        winningNumbers: List<Int>,
+        winningSecondary: List<Int>
+    ) {
+        val game = GameConfig.findById(ticket.gameId)
+        val winningNumbersSet = winningNumbers.toSet()
+        val ticketNumbersSet = ticket.numbers.toSet()
+        val hitCount = ticketNumbersSet.intersect(winningNumbersSet).size
+
+        val starHitCount = if (game.hasSecondaryMatrix) {
+            val winningStarSet = winningSecondary.toSet()
+            val ticketStarSet = ticket.secondaryNumbers.toSet()
+            ticketStarSet.intersect(winningStarSet).size
+        } else {
+            0
+        }
+
+        val prizeResult = PrizeCalculator.calculatePrize(game, hitCount, starHitCount)
+        val updatedTicket = ticket.copy(
+            isValidated = true,
+            validatedHits = hitCount,
+            validatedStarHits = if (game.hasSecondaryMatrix) starHitCount else null,
+            prizeLabel = prizeResult.prizeLabel
+        )
+
+        viewModelScope.launch {
+            repository.updateTicket(updatedTicket)
+            closeValidationDialog()
+            if (prizeResult.isWinner) {
+                _userFeedback.value = "🎉 ¡Boleto validado con premio! (${prizeResult.prizeLabel})"
+            } else {
+                _userFeedback.value = "Boleto validado — sin aciertos en categorías premiadas"
+            }
         }
     }
 

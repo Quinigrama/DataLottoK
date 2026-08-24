@@ -7,7 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.data.model.SavedTicket
 
-@Database(entities = [SavedTicket::class], version = 1, exportSchema = false)
+// Room Database con migración destructiva (fallbackToDestructiveMigration) al cambiar esquema en versión 2
+@Database(entities = [SavedTicket::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ticketDao(): TicketDao

@@ -75,6 +75,54 @@ class ExampleUnitTest {
     assertEquals(emptyList<Int>(), converters.toIntList(""))
     assertEquals(emptyList<Int>(), converters.toIntList(null))
   }
+
+  @Test
+  fun testDrawDaysFormatting() {
+    val bonoloto = GameConfig.Bonoloto
+    val primitiva = GameConfig.LaPrimitiva
+    val euromillones = GameConfig.Euromillones
+
+    assertEquals("Lunes, Jueves, Sábado", primitiva.formatDrawDays())
+    assertEquals("Martes, Viernes", euromillones.formatDrawDays())
+    assertTrue(bonoloto.formatDrawDays().contains("Lunes"))
+  }
+
+  @Test
+  fun testBonolotoPrizeCalculation() {
+    val bonoloto = GameConfig.Bonoloto
+
+    val prize6 = com.example.logic.PrizeCalculator.calculatePrize(bonoloto, 6, 0)
+    assertTrue(prize6.isWinner)
+    assertEquals("6 aciertos", prize6.prizeLabel)
+
+    val prize3 = com.example.logic.PrizeCalculator.calculatePrize(bonoloto, 3, 0)
+    assertTrue(prize3.isWinner)
+    assertEquals("3 aciertos", prize3.prizeLabel)
+
+    val prize2 = com.example.logic.PrizeCalculator.calculatePrize(bonoloto, 2, 0)
+    org.junit.Assert.assertFalse(prize2.isWinner)
+    assertTrue(prize2.prizeLabel.contains("Sin premio"))
+  }
+
+  @Test
+  fun testEuromillonesPrizeCalculation() {
+    val euromillones = GameConfig.Euromillones
+
+    // 1ª categoría: 5 + 2⭐
+    val tier1 = com.example.logic.PrizeCalculator.calculatePrize(euromillones, 5, 2)
+    assertTrue(tier1.isWinner)
+    assertEquals(1, tier1.tier?.category)
+
+    // 13ª categoría: 2 + 0⭐
+    val tier13 = com.example.logic.PrizeCalculator.calculatePrize(euromillones, 2, 0)
+    assertTrue(tier13.isWinner)
+    assertEquals(13, tier13.tier?.category)
+
+    // Sin premio: 1 + 0⭐
+    val noPrize = com.example.logic.PrizeCalculator.calculatePrize(euromillones, 1, 0)
+    org.junit.Assert.assertFalse(noPrize.isWinner)
+    assertTrue(noPrize.prizeLabel.contains("Sin premio"))
+  }
 }
 
 

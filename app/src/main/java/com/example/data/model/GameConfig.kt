@@ -30,8 +30,23 @@ data class GameConfig(
     val secondaryDarkColor: Color = Color(0xFFCA8A04),
     val secondaryGlowColor: Color = Color(0xFFFDE047),
     val secondaryContainerColor: Color = Color(0xFFFEF08A),
-    val secondaryOnContainerColor: Color = Color(0xFF854D0E)
+    val secondaryOnContainerColor: Color = Color(0xFF854D0E),
+    // Días de sorteo (0 = Domingo, 1 = Lunes, 2 = Martes, 3 = Miércoles, 4 = Jueves, 5 = Viernes, 6 = Sábado)
+    val drawDays: List<Int> = listOf(0, 1, 2, 3, 4, 5, 6)
 ) {
+    fun formatDrawDays(): String {
+        val dayNames = mapOf(
+            0 to "Domingo",
+            1 to "Lunes",
+            2 to "Martes",
+            3 to "Miércoles",
+            4 to "Jueves",
+            5 to "Viernes",
+            6 to "Sábado"
+        )
+        return drawDays.mapNotNull { dayNames[it] }.joinToString(", ")
+    }
+
     companion object {
         val Bonoloto = GameConfig(
             id = "bonoloto",
@@ -46,7 +61,8 @@ data class GameConfig(
             glowColor = Color(0xFF34D399),
             containerColor = Color(0xFFD1FAE5),
             onContainerColor = Color(0xFF065F46),
-            hasSecondaryMatrix = false
+            hasSecondaryMatrix = false,
+            drawDays = listOf(1, 2, 3, 4, 5, 6, 0)
         )
 
         val LaPrimitiva = GameConfig(
@@ -62,7 +78,8 @@ data class GameConfig(
             glowColor = Color(0xFFFBBF24),
             containerColor = Color(0xFFFEF3C7),
             onContainerColor = Color(0xFF78350F),
-            hasSecondaryMatrix = false
+            hasSecondaryMatrix = false,
+            drawDays = listOf(1, 4, 6)
         )
 
         val Euromillones = GameConfig(
@@ -88,7 +105,8 @@ data class GameConfig(
             secondaryDarkColor = Color(0xFFCA8A04),
             secondaryGlowColor = Color(0xFFFDE047),
             secondaryContainerColor = Color(0xFFFEF08A),
-            secondaryOnContainerColor = Color(0xFF854D0E)
+            secondaryOnContainerColor = Color(0xFF854D0E),
+            drawDays = listOf(2, 5)
         )
 
         val AvailableGames = listOf(Bonoloto, LaPrimitiva, Euromillones)

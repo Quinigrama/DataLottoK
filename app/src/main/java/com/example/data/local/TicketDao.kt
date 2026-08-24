@@ -16,6 +16,9 @@ interface TicketDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTicket(ticket: SavedTicket): Long
 
+    @androidx.room.Update
+    suspend fun updateTicket(ticket: SavedTicket)
+
     @Delete
     suspend fun deleteTicket(ticket: SavedTicket)
 

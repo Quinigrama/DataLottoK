@@ -11,5 +11,9 @@ data class SavedTicket(
     val gameName: String,
     val numbers: List<Int>,
     val secondaryNumbers: List<Int> = emptyList(),
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isValidated: Boolean = false,
+    val validatedHits: Int? = null,
+    val validatedStarHits: Int? = null,
+    val prizeLabel: String? = null
 )
