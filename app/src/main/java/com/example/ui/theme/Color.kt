@@ -45,3 +45,7 @@ val SlateDarkBackground = Color(0xFF0B1120)
 val SlateDarkSurface = Color(0xFF1E293B)
 val SlateDarkSurfaceVariant = Color(0xFF334155)
 
+// Card Border Tokens (1px solid in web app)
+val CardBorderLight = Color(0xFFCBD5E1)
+val CardBorderDark = Color(0xFF334155)
+

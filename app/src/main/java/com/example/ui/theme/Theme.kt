@@ -19,7 +19,8 @@ data class ExtraColors(
     val success: Color = BrandSuccess,
     val warning: Color = BrandWarning,
     val gradientStart: Color = BrandGradientStart,
-    val gradientEnd: Color = BrandGradientEnd
+    val gradientEnd: Color = BrandGradientEnd,
+    val cardBorder: Color = CardBorderLight
 )
 
 val LocalExtraColors = staticCompositionLocalOf { ExtraColors() }
@@ -90,14 +91,16 @@ fun DataLottoTheme(
             success = BrandSuccess,
             warning = BrandWarning,
             gradientStart = DarkGradientStart,
-            gradientEnd = DarkGradientEnd
+            gradientEnd = DarkGradientEnd,
+            cardBorder = CardBorderDark
         )
     } else {
         ExtraColors(
             success = BrandSuccess,
             warning = BrandWarning,
             gradientStart = BrandGradientStart,
-            gradientEnd = BrandGradientEnd
+            gradientEnd = BrandGradientEnd,
+            cardBorder = CardBorderLight
         )
     }
 

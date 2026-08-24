@@ -1,5 +1,6 @@
 package com.example.ui.screens.tickets
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -194,7 +195,8 @@ fun SavedTicketsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surface
-                            )
+                            ),
+                            border = BorderStroke(1.dp, extraColors.cardBorder)
                         ) {
                             LazyRow(
                                 modifier = Modifier
@@ -344,7 +346,8 @@ fun TicketCard(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, LocalExtraColors.current.cardBorder)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -636,7 +639,8 @@ fun TicketValidationDialog(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            border = BorderStroke(1.dp, LocalExtraColors.current.cardBorder)
         ) {
             Column(
                 modifier = Modifier
@@ -685,7 +689,8 @@ fun TicketValidationDialog(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    border = BorderStroke(1.dp, LocalExtraColors.current.cardBorder)
                 ) {
                     Row(
                         modifier = Modifier
@@ -931,7 +936,8 @@ fun EmptyTicketsView(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        border = BorderStroke(1.dp, LocalExtraColors.current.cardBorder)
     ) {
         Column(
             modifier = Modifier.padding(28.dp),

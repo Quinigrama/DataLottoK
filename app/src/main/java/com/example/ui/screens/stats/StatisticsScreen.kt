@@ -1,6 +1,7 @@
 package com.example.ui.screens.stats
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -213,7 +214,8 @@ fun StatisticsScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
-                    )
+                    ),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     TabRow(
                         selectedTabIndex = GameConfig.AvailableGames.indexOfFirst { it.id == currentGame.id }.coerceAtLeast(0),
@@ -263,7 +265,8 @@ fun StatisticsScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFFFEF3C7)
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     Row(
                         modifier = Modifier
@@ -296,7 +299,8 @@ fun StatisticsScreen(
                         .padding(bottom = 8.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(14.dp),
@@ -406,7 +410,8 @@ fun StatisticsScreen(
                             .padding(bottom = 8.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = BorderStroke(1.dp, extraColors.cardBorder)
                     ) {
                         TabRow(
                             selectedTabIndex = selectedTab,
@@ -460,7 +465,8 @@ fun StatisticsScreen(
                             .padding(vertical = 4.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        border = BorderStroke(1.dp, extraColors.cardBorder)
                     ) {
                         Column(
                             modifier = Modifier
@@ -585,7 +591,8 @@ fun FrequencyCard(
             .testTag("freq_card_${if (isStar) "star_" else ""}${entry.number}"),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
+        border = BorderStroke(1.dp, LocalExtraColors.current.cardBorder)
     ) {
         Row(
             modifier = Modifier

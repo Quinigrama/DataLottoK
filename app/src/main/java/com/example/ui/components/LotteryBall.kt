@@ -1,9 +1,15 @@
 package com.example.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,14 +55,25 @@ fun LotteryBall(
     glowColor: Color = Color(0xFF34D399),
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "ball_pulse_transition")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1.05f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(750, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "ball_pulse_scale"
+    )
+
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.08f else 1f,
+        targetValue = if (isSelected) pulseScale else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "ball_scale"
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) primaryColor else MaterialTheme.colorScheme.surfaceVariant,
+        targetValue = if (isSelected) Color(0xFFFFD700) else MaterialTheme.colorScheme.surfaceVariant,
         label = "ball_bg"
     )
 
@@ -94,9 +111,8 @@ fun LotteryBall(
             .then(
                 if (isSelected) {
                     Modifier.background(
-                        Brush.radialGradient(
-                            colors = listOf(glowColor, darkColor),
-                            radius = 60f
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFFD700), Color(0xFFFFA000))
                         )
                     )
                 } else {
@@ -106,7 +122,7 @@ fun LotteryBall(
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
                 color = if (isSelected) {
-                    if (isStar) Color(0xFFFFFBEB) else Color.White.copy(alpha = 0.8f)
+                    Color(0xFFFF8F00)
                 } else {
                     MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                 },

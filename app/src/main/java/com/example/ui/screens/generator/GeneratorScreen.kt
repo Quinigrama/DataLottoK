@@ -1,6 +1,13 @@
 package com.example.ui.screens.generator
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +66,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -288,7 +296,8 @@ fun GeneratorScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
-                    )
+                    ),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     TabRow(
                         selectedTabIndex = GameConfig.AvailableGames.indexOfFirst { it.id == currentGame.id }.coerceAtLeast(0),
@@ -333,7 +342,8 @@ fun GeneratorScreen(
                         .padding(bottom = 8.dp),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     Row(
                         modifier = Modifier
@@ -419,7 +429,8 @@ fun GeneratorScreen(
                                     .testTag("multiple_config_card"),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, extraColors.cardBorder)
                             ) {
                                 Column(
                                     modifier = Modifier.padding(14.dp),
@@ -511,7 +522,8 @@ fun GeneratorScreen(
                                         Card(
                                             modifier = Modifier.fillMaxWidth(),
                                             colors = CardDefaults.cardColors(containerColor = BrandDanger.copy(alpha = 0.12f)),
-                                            shape = RoundedCornerShape(10.dp)
+                                            shape = RoundedCornerShape(10.dp),
+                                            border = BorderStroke(1.dp, extraColors.cardBorder)
                                         ) {
                                             Row(
                                                 modifier = Modifier.padding(10.dp),
@@ -570,7 +582,8 @@ fun GeneratorScreen(
                                     .testTag("reduced_config_card"),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, extraColors.cardBorder)
                             ) {
                                 Column(
                                     modifier = Modifier.padding(14.dp),
@@ -656,7 +669,8 @@ fun GeneratorScreen(
                                 containerColor = MaterialTheme.colorScheme.surface
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, extraColors.cardBorder)
                         ) {
                             Column(
                                 modifier = Modifier.padding(14.dp),
@@ -973,7 +987,8 @@ fun GeneratorScreen(
                                     .testTag("combination_quality_card"),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, extraColors.cardBorder)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -1063,7 +1078,8 @@ fun GeneratorScreen(
                                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.surface
-                                )
+                                ),
+                                border = BorderStroke(1.dp, extraColors.cardBorder)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -1132,7 +1148,8 @@ fun GeneratorScreen(
                                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = currentGame.secondaryContainerColor.copy(alpha = 0.45f)
-                                    )
+                                    ),
+                                    border = BorderStroke(1.dp, extraColors.cardBorder)
                                 ) {
                                     Column(
                                         modifier = Modifier
@@ -1197,6 +1214,23 @@ fun GeneratorScreen(
                 }
 
                 // Action Buttons Panel in solid white card
+                val isGenerateEnabled = if (strategy == "reducida") {
+                    isReducedPrimaryComplete && isReducedSecondaryComplete
+                } else {
+                    liveError == null
+                }
+
+                val generateInfiniteTransition = rememberInfiniteTransition(label = "generate_pulse")
+                val generateScale by generateInfiniteTransition.animateFloat(
+                    initialValue = 1f,
+                    targetValue = 1.02f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "generate_button_scale"
+                )
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1206,7 +1240,8 @@ fun GeneratorScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
-                    )
+                    ),
+                    border = BorderStroke(1.dp, extraColors.cardBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp),
@@ -1228,15 +1263,28 @@ fun GeneratorScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
-                                    .testTag("generate_button"),
-                                enabled = if (strategy == "reducida") {
-                                    isReducedPrimaryComplete && isReducedSecondaryComplete
-                                } else {
-                                    liveError == null
-                                },
+                                    .testTag("generate_button")
+                                    .scale(if (isGenerateEnabled) generateScale else 1f)
+                                    .then(
+                                        if (isGenerateEnabled) {
+                                            Modifier.background(
+                                                brush = Brush.linearGradient(
+                                                    colors = listOf(
+                                                        MaterialTheme.colorScheme.primary,
+                                                        MaterialTheme.colorScheme.secondary
+                                                    )
+                                                ),
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                        } else {
+                                            Modifier
+                                        }
+                                    ),
+                                enabled = isGenerateEnabled,
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = gamePrimaryColor
+                                    containerColor = Color.Transparent,
+                                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                                 )
                             ) {
                                 Text(
