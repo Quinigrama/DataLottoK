@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Badge
@@ -75,7 +76,8 @@ import com.example.ui.viewmodel.LotteryViewModel
 fun GeneratorScreen(
     viewModel: LotteryViewModel,
     onNavigateToSavedTickets: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenDrawer: () -> Unit = {}
 ) {
     val currentGame by viewModel.currentGame.collectAsStateWithLifecycle()
     val selectedNumbers by viewModel.selectedNumbers.collectAsStateWithLifecycle()
@@ -122,6 +124,18 @@ fun GeneratorScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 CenterAlignedTopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onOpenDrawer,
+                            modifier = Modifier.testTag("menu_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menú",
+                                tint = BrandDark
+                            )
+                        }
+                    },
                     title = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
