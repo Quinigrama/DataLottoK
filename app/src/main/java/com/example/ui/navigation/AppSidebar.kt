@@ -262,10 +262,11 @@ private fun DarkModeToggleItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val darkMsg = tr("🌙 Modo oscuro activado", "🌙 Dark mode activated")
-    val lightMsg = tr("☀️ Modo claro activado", "☀️ Light mode activated")
+    val darkMsg = tr("Modo oscuro activado", "Dark mode enabled")
+    val lightMsg = tr("Modo claro activado", "Light mode enabled")
     Row(
         modifier = modifier
+            .testTag("dark_mode_toggle")
             .fillMaxWidth()
             .height(46.dp)
             .clickable {
@@ -287,12 +288,12 @@ private fun DarkModeToggleItem(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
-                .background(if (isDarkMode) BrandIndigo else Color.White.copy(alpha = 0.15f))
+                .background(if (isDarkMode) Color(0xFF10B981) else BrandIndigo.copy(alpha = 0.15f))
                 .padding(horizontal = 8.dp, vertical = 2.dp)
         ) {
             Text(
                 text = if (isDarkMode) "ON" else "OFF",
-                color = Color.White,
+                color = if (isDarkMode) Color.White else BrandIndigo,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )

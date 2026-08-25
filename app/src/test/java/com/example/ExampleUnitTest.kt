@@ -80,7 +80,7 @@ class ExampleUnitTest {
     assertEquals(1, result.secondaryNumbers.size)
     assertTrue(result.secondaryNumbers.all { it in 0..9 })
     assertEquals("gordo", gordo.id)
-    assertEquals("El Gordo", gordo.name)
+    assertEquals("El Gordo de la Primitiva", gordo.name)
     assertEquals("🇪🇸", gordo.flagEmoji)
   }
 

@@ -1269,10 +1269,10 @@ fun GeneratorScreen(
                                             MarkingCircleButton(
                                                 icon = "🎲",
                                                 isActive = false,
-                                                activeBackground = Color(0xFF673AB7),
-                                                activeBorder = Color(0xFF512DA8),
-                                                inactiveBackground = Color(0xFFEDE7F6),
-                                                inactiveBorder = Color(0xFF673AB7),
+                                                activeBackground = Color(0xFF475569),
+                                                activeBorder = Color(0xFF334155),
+                                                inactiveBackground = Color(0xFFF1F5F9),
+                                                inactiveBorder = Color(0xFFCBD5E1),
                                                 onClick = { viewModel.generateRandom() }
                                             )
                                         }
@@ -1457,7 +1457,9 @@ fun GeneratorScreen(
                                                     colors = listOf(
                                                         MaterialTheme.colorScheme.primary,
                                                         MaterialTheme.colorScheme.secondary
-                                                    )
+                                                    ),
+                                                    start = Offset(0f, 0f),
+                                                    end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                                                 ),
                                                 shape = RoundedCornerShape(12.dp)
                                             )
