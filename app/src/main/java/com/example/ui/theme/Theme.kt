@@ -23,7 +23,7 @@ data class ExtraColors(
     val cardBorder: Color = CardBorderLight,
     val ballUnselectedStart: Color = Color(0xFFFAFAFA),
     val ballUnselectedEnd: Color = Color(0xFFF0F0F0),
-    val ballUnselectedBorder: Color = Color(0xFFE2E8F0)
+    val ballUnselectedBorder: Color = Color(0xFFE0E0E0)
 )
 
 val LocalExtraColors = staticCompositionLocalOf { ExtraColors() }
@@ -109,7 +109,7 @@ fun DataLottoTheme(
             cardBorder = CardBorderLight,
             ballUnselectedStart = Color(0xFFFAFAFA),
             ballUnselectedEnd = Color(0xFFF0F0F0),
-            ballUnselectedBorder = Color(0xFFE2E8F0)
+            ballUnselectedBorder = Color(0xFFE0E0E0)
         )
     }
 

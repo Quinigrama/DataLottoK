@@ -31,12 +31,8 @@ sealed class GridLayout {
             if (n in minNumber..(minNumber + numberRange - 1)) n else null
         }
         is DecadeColumn -> {
-            val n = if (col == 0) {
-                if (row == 9) null else minNumber + row
-            } else {
-                col * 10 + row
-            }
-            if (n != null && n in minNumber..(minNumber + numberRange - 1)) n else null
+            val n = col * 10 + row
+            if (n in minNumber..(minNumber + numberRange - 1)) n else null
         }
     }
 }
