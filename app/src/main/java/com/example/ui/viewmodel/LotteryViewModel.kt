@@ -300,6 +300,29 @@ class LotteryViewModel(
         }
     }
 
+    fun generateRandom() {
+        val game = _currentGame.value
+        val availableNumbers = (game.minNumber..game.maxNumber).filter { !_excludedNumbers.value.contains(it) }
+        if (availableNumbers.size < game.pickCount) {
+            _userFeedback.value = "No hay suficientes números disponibles para generar al azar"
+            return
+        }
+        if (game.hasSecondaryMatrix && game.secondaryMinNumber != null && game.secondaryMaxNumber != null) {
+            val availableStars = (game.secondaryMinNumber..game.secondaryMaxNumber).filter { !_excludedStars.value.contains(it) }
+            if (availableStars.size < game.secondaryPickCount) {
+                _userFeedback.value = "No hay suficientes estrellas disponibles para generar al azar"
+                return
+            }
+        }
+        val result = LotteryGenerator.generateSimple(
+            gameConfig = game,
+            excludedNumbers = _excludedNumbers.value,
+            excludedStars = _excludedStars.value
+        )
+        _selectedNumbers.value = result.primaryNumbers.toSet()
+        _selectedSecondaryNumbers.value = result.secondaryNumbers.toSet()
+    }
+
     fun generateCombination() {
         val game = _currentGame.value
         val result = LotteryGenerator.generateSimple(

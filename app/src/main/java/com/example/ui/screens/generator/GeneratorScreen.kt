@@ -1261,6 +1261,19 @@ fun GeneratorScreen(
                                             inactiveBorder = Color(0xFF9E9E9E),
                                             onClick = { viewModel.setMarkingMode(MarkingMode.EXCLUDED) }
                                         )
+
+                                        // 🎲 Azar
+                                        if (strategy == "simple") {
+                                            MarkingCircleButton(
+                                                icon = "🎲",
+                                                isActive = false,
+                                                activeBackground = Color(0xFF673AB7),
+                                                activeBorder = Color(0xFF512DA8),
+                                                inactiveBackground = Color(0xFFEDE7F6),
+                                                inactiveBorder = Color(0xFF673AB7),
+                                                onClick = { viewModel.generateRandom() }
+                                            )
+                                        }
                                     }
 
                                     NumberGridPanel(
