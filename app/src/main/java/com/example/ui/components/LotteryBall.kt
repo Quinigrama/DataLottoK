@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.LocalExtraColors
 
 enum class BallMarking {
-    NONE, FAVORITE, HOT, COLD, ABSENT
+    NONE, EXCLUDED, FAVORITE, HOT, COLD, ABSENT
 }
 
 @Composable
@@ -83,6 +83,7 @@ fun LotteryBall(
         Color.White
     } else {
         when (marking) {
+            BallMarking.EXCLUDED -> Color(0xFFE0E0E0)
             BallMarking.FAVORITE -> Color(0xFFF57F17)
             BallMarking.HOT -> Color(0xFFD32F2F)
             BallMarking.COLD -> Color(0xFF0277BD)
@@ -102,6 +103,9 @@ fun LotteryBall(
         )
     } else {
         when (marking) {
+            BallMarking.EXCLUDED -> Brush.linearGradient(
+                colors = listOf(Color(0xFF616161), Color(0xFF616161))
+            )
             BallMarking.FAVORITE -> Brush.linearGradient(
                 colors = listOf(Color(0xFFFFF9C4), Color(0xFFFFF59D))
             )
@@ -127,6 +131,7 @@ fun LotteryBall(
         Color(0xFFFF8F00)
     } else {
         when (marking) {
+            BallMarking.EXCLUDED -> Color(0xFF212121)
             BallMarking.FAVORITE -> Color(0xFFFBC02D)
             BallMarking.HOT -> Color(0xFFFF5722)
             BallMarking.COLD -> Color(0xFF03A9F4)

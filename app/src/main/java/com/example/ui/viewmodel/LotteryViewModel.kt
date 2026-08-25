@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class MarkingMode {
-    COLD, HOT, ABSENT, FAVORITE
+    COLD, HOT, ABSENT, FAVORITE, EXCLUDED
 }
 
 class LotteryViewModel(
@@ -31,7 +31,7 @@ class LotteryViewModel(
     private val _currentGame = MutableStateFlow(GameConfig.Bonoloto)
     val currentGame: StateFlow<GameConfig> = _currentGame.asStateFlow()
 
-    // Modo de marcado manual: Frío, Caliente, Ausente, Favorito
+    // Modo de marcado manual: Frío, Caliente, Ausente, Favorito, Excluido
     private val _markingMode = MutableStateFlow<MarkingMode?>(null)
     val markingMode: StateFlow<MarkingMode?> = _markingMode.asStateFlow()
 
@@ -44,6 +44,13 @@ class LotteryViewModel(
 
     private val _manualAbsent = MutableStateFlow<Set<Int>>(emptySet())
     val manualAbsent: StateFlow<Set<Int>> = _manualAbsent.asStateFlow()
+
+    // Números y estrellas excluidos (NO persistentes)
+    private val _excludedNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    val excludedNumbers: StateFlow<Set<Int>> = _excludedNumbers.asStateFlow()
+
+    private val _excludedStars = MutableStateFlow<Set<Int>>(emptySet())
+    val excludedStars: StateFlow<Set<Int>> = _excludedStars.asStateFlow()
 
     // Favoritos persistentes por juego
     private val _favoriteNumbers = MutableStateFlow<Set<Int>>(emptySet())
@@ -212,7 +219,29 @@ class LotteryViewModel(
                 }
                 true
             }
+            MarkingMode.EXCLUDED -> {
+                handleExclusionClick(gameId, number, isStar)
+            }
         }
+    }
+
+    fun handleExclusionClick(gameId: String, number: Int, isStar: Boolean): Boolean {
+        val isSelected = if (isStar) {
+            _selectedSecondaryNumbers.value.contains(number)
+        } else {
+            _selectedNumbers.value.contains(number)
+        }
+        if (isSelected) {
+            return false
+        }
+        if (isStar) {
+            val current = _excludedStars.value
+            _excludedStars.value = if (current.contains(number)) current - number else current + number
+        } else {
+            val current = _excludedNumbers.value
+            _excludedNumbers.value = if (current.contains(number)) current - number else current + number
+        }
+        return true
     }
 
     fun loadFavorites(context: Context, gameId: String) {
@@ -224,6 +253,8 @@ class LotteryViewModel(
         _manualHot.value = emptySet()
         _manualCold.value = emptySet()
         _manualAbsent.value = emptySet()
+        _excludedNumbers.value = emptySet()
+        _excludedStars.value = emptySet()
     }
 
     fun setTicketFilter(gameId: String?) {
@@ -271,7 +302,11 @@ class LotteryViewModel(
 
     fun generateCombination() {
         val game = _currentGame.value
-        val result = LotteryGenerator.generateSimple(game)
+        val result = LotteryGenerator.generateSimple(
+            gameConfig = game,
+            excludedNumbers = _excludedNumbers.value,
+            excludedStars = _excludedStars.value
+        )
         _selectedNumbers.value = result.primaryNumbers.toSet()
         _selectedSecondaryNumbers.value = result.secondaryNumbers.toSet()
         _userFeedback.value = "🍀 Combinación generada para ${game.name}"

@@ -125,6 +125,8 @@ fun GeneratorScreen(
     val manualAbsent by viewModel.manualAbsent.collectAsStateWithLifecycle()
     val favoriteNumbers by viewModel.favoriteNumbers.collectAsStateWithLifecycle()
     val favoriteStars by viewModel.favoriteStars.collectAsStateWithLifecycle()
+    val excludedNumbers by viewModel.excludedNumbers.collectAsStateWithLifecycle()
+    val excludedStars by viewModel.excludedStars.collectAsStateWithLifecycle()
     val markingMode by viewModel.markingMode.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -187,7 +189,9 @@ fun GeneratorScreen(
     }
 
     fun getMainBallMarking(num: Int): BallMarking {
-        return if (favoriteNumbers.contains(num)) {
+        return if (excludedNumbers.contains(num)) {
+            BallMarking.EXCLUDED
+        } else if (favoriteNumbers.contains(num)) {
             BallMarking.FAVORITE
         } else if (manualHot.contains(num)) {
             BallMarking.HOT
@@ -205,7 +209,9 @@ fun GeneratorScreen(
     }
 
     fun getStarBallMarking(num: Int): BallMarking {
-        return if (favoriteStars.contains(num)) {
+        return if (excludedStars.contains(num)) {
+            BallMarking.EXCLUDED
+        } else if (favoriteStars.contains(num)) {
             BallMarking.FAVORITE
         } else if (manualHot.contains(num)) {
             BallMarking.HOT
@@ -223,6 +229,8 @@ fun GeneratorScreen(
     }
 
     val maxFavoritesMsg = tr("Máximo 10 favoritos", "Maximum 10 favorites")
+    val excludedCannotSelectMsg = tr("Número excluido, no se puede seleccionar", "Excluded number, cannot be selected")
+    val selectedCannotExcludeMsg = tr("No se puede excluir un número ya seleccionado", "Cannot exclude an already selected number")
 
     val isSimplePrimaryComplete = selectedNumbers.size == currentGame.pickCount
     val isSimpleSecondaryComplete = !currentGame.hasSecondaryMatrix ||
@@ -1242,6 +1250,17 @@ fun GeneratorScreen(
                                             inactiveBorder = Color(0xFFFBC02D),
                                             onClick = { viewModel.setMarkingMode(MarkingMode.FAVORITE) }
                                         )
+
+                                        // 🚫 Excluir
+                                        MarkingCircleButton(
+                                            icon = "🚫",
+                                            isActive = markingMode == MarkingMode.EXCLUDED,
+                                            activeBackground = Color(0xFF9E9E9E),
+                                            activeBorder = Color(0xFF616161),
+                                            inactiveBackground = Color(0xFFF5F5F5),
+                                            inactiveBorder = Color(0xFF9E9E9E),
+                                            onClick = { viewModel.setMarkingMode(MarkingMode.EXCLUDED) }
+                                        )
                                     }
 
                                     NumberGridPanel(
@@ -1251,7 +1270,14 @@ fun GeneratorScreen(
                                         selectedNumbers = selectedNumbers,
                                         getMarking = { getMainBallMarking(it) },
                                         onNumberClick = { num ->
-                                            if (markingMode == null) {
+                                            if (markingMode != MarkingMode.EXCLUDED && excludedNumbers.contains(num)) {
+                                                Toast.makeText(context, excludedCannotSelectMsg, Toast.LENGTH_SHORT).show()
+                                            } else if (markingMode == MarkingMode.EXCLUDED) {
+                                                val success = viewModel.handleExclusionClick(currentGame.id, num, isStar = false)
+                                                if (!success) {
+                                                    Toast.makeText(context, selectedCannotExcludeMsg, Toast.LENGTH_SHORT).show()
+                                                }
+                                            } else if (markingMode == null) {
                                                 viewModel.toggleNumber(num)
                                             } else {
                                                 val success = viewModel.handleMarkingClick(context, currentGame.id, num, isStar = false)
@@ -1326,7 +1352,14 @@ fun GeneratorScreen(
                                             isStar = true,
                                             ballSize = 44.dp,
                                             onNumberClick = { secNum ->
-                                                if (markingMode == null) {
+                                                if (markingMode != MarkingMode.EXCLUDED && excludedStars.contains(secNum)) {
+                                                    Toast.makeText(context, excludedCannotSelectMsg, Toast.LENGTH_SHORT).show()
+                                                } else if (markingMode == MarkingMode.EXCLUDED) {
+                                                    val success = viewModel.handleExclusionClick(currentGame.id, secNum, isStar = true)
+                                                    if (!success) {
+                                                        Toast.makeText(context, selectedCannotExcludeMsg, Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } else if (markingMode == null) {
                                                     viewModel.toggleSecondaryNumber(secNum)
                                                 } else {
                                                     val success = viewModel.handleMarkingClick(context, currentGame.id, secNum, isStar = true)

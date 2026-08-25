@@ -19,11 +19,16 @@ object LotteryGenerator {
     private val random = SecureRandom()
 
     /**
-     * Genera una combinación aleatoria simple para el juego especificado.
+     * Genera una combinación aleatoria simple para el juego especificado,
+     * respetando los números principales y secundarios excluidos.
      * Retorna una lista ordenada de números únicos principales y secundarios (si aplica).
      */
-    fun generateSimple(gameConfig: GameConfig): CombinationResult {
-        val totalNumbers = (gameConfig.minNumber..gameConfig.maxNumber).toList()
+    fun generateSimple(
+        gameConfig: GameConfig,
+        excludedNumbers: Set<Int> = emptySet(),
+        excludedStars: Set<Int> = emptySet()
+    ): CombinationResult {
+        val totalNumbers = (gameConfig.minNumber..gameConfig.maxNumber).filter { !excludedNumbers.contains(it) }
         val picked = totalNumbers.shuffled(random).take(gameConfig.pickCount).sorted()
 
         val secondaryPicked = if (gameConfig.hasSecondaryMatrix &&
@@ -31,7 +36,7 @@ object LotteryGenerator {
             gameConfig.secondaryMaxNumber != null &&
             gameConfig.secondaryPickCount > 0
         ) {
-            val secondaryTotal = (gameConfig.secondaryMinNumber..gameConfig.secondaryMaxNumber).toList()
+            val secondaryTotal = (gameConfig.secondaryMinNumber..gameConfig.secondaryMaxNumber).filter { !excludedStars.contains(it) }
             secondaryTotal.shuffled(random).take(gameConfig.secondaryPickCount).sorted()
         } else {
             emptyList()
