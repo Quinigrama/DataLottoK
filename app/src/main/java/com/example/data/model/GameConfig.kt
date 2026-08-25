@@ -121,7 +121,37 @@ data class GameConfig(
             costPerBet = 2.50
         )
 
-        val AvailableGames = listOf(Bonoloto, LaPrimitiva, Euromillones)
+        val EuroDreams = GameConfig(
+            id = "eurodreams",
+            name = "EuroDreams",
+            flagEmoji = "🇪🇺",
+            minNumber = 1,
+            maxNumber = 40,
+            pickCount = 6,
+            currency = "€",
+            primaryColor = Color(0xFF6B21A8),     // Púrpura Europeo
+            darkColor = Color(0xFF581C87),
+            glowColor = Color(0xFFA855F7),
+            containerColor = Color(0xFFF3E8FF),
+            onContainerColor = Color(0xFF581C87),
+            numbersLayout = GridLayout.Standard(columns = 8),
+            secondaryLayout = GridLayout.Standard(columns = 5),
+            hasSecondaryMatrix = true,
+            secondaryMinNumber = 1,
+            secondaryMaxNumber = 5,
+            secondaryPickCount = 1,
+            secondaryName = "Sueño",
+            secondaryEmoji = "🌙",
+            secondaryPrimaryColor = Color(0xFFEC4899),
+            secondaryDarkColor = Color(0xFFBE185D),
+            secondaryGlowColor = Color(0xFFF472B6),
+            secondaryContainerColor = Color(0xFFFCE7F3),
+            secondaryOnContainerColor = Color(0xFF9D174D),
+            drawDays = listOf(1, 4),
+            costPerBet = 2.50
+        )
+
+        val AvailableGames = listOf(Bonoloto, LaPrimitiva, Euromillones, EuroDreams)
 
         fun findById(id: String): GameConfig {
             return AvailableGames.firstOrNull { it.id.equals(id, ignoreCase = true) } ?: Bonoloto

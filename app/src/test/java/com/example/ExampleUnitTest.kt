@@ -57,11 +57,55 @@ class ExampleUnitTest {
 
   @Test
   fun testGameConfigLookup() {
-    assertEquals(3, GameConfig.AvailableGames.size)
+    assertEquals(4, GameConfig.AvailableGames.size)
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("bonoloto"))
     assertEquals(GameConfig.LaPrimitiva, GameConfig.findById("primitiva"))
     assertEquals(GameConfig.Euromillones, GameConfig.findById("euromillones"))
+    assertEquals(GameConfig.EuroDreams, GameConfig.findById("eurodreams"))
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("unknown_game"))
+  }
+
+  @Test
+  fun testEuroDreamsGenerator() {
+    val eurodreams = GameConfig.EuroDreams
+    val result = LotteryGenerator.generateSimple(eurodreams)
+
+    assertEquals(6, result.primaryNumbers.size)
+    assertEquals(6, result.primaryNumbers.toSet().size)
+    assertTrue(result.primaryNumbers.all { it in 1..40 })
+    assertEquals(result.primaryNumbers.sorted(), result.primaryNumbers)
+
+    assertTrue(eurodreams.hasSecondaryMatrix)
+    assertEquals(1, result.secondaryNumbers.size)
+    assertTrue(result.secondaryNumbers.all { it in 1..5 })
+    assertEquals("eurodreams", eurodreams.id)
+    assertEquals("EuroDreams", eurodreams.name)
+    assertEquals("🇪🇺", eurodreams.flagEmoji)
+  }
+
+  @Test
+  fun testEuroDreamsPrizeCalculation() {
+    val eurodreams = GameConfig.EuroDreams
+
+    // 1ª categoría: 6 + 1🌙
+    val tier1 = com.example.logic.PrizeCalculator.calculatePrize(eurodreams, 6, 1)
+    assertTrue(tier1.isWinner)
+    assertEquals(1, tier1.tier?.category)
+
+    // 2ª categoría: 6 + 0🌙
+    val tier2 = com.example.logic.PrizeCalculator.calculatePrize(eurodreams, 6, 0)
+    assertTrue(tier2.isWinner)
+    assertEquals(2, tier2.tier?.category)
+
+    // 6ª categoría: 2 aciertos
+    val tier6 = com.example.logic.PrizeCalculator.calculatePrize(eurodreams, 2, 0)
+    assertTrue(tier6.isWinner)
+    assertEquals(6, tier6.tier?.category)
+
+    // Sin premio: 1 + 0🌙
+    val noPrize = com.example.logic.PrizeCalculator.calculatePrize(eurodreams, 1, 0)
+    org.junit.Assert.assertFalse(noPrize.isWinner)
+    assertTrue(noPrize.prizeLabel.contains("Sin premio"))
   }
 
   @Test

@@ -459,40 +459,42 @@ fun GeneratorScreen(
                             )
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isMultiple) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
-                                .clickable { viewModel.setStrategy("multiple") }
-                                .padding(vertical = 8.dp)
-                                .testTag("strategy_multiple_button"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tr("🎯 Múltiple", "🎯 Multiple"),
-                                fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isMultiple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 13.sp
-                            )
-                        }
+                        if (currentGame.id != "eurodreams") {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isMultiple) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
+                                    .clickable { viewModel.setStrategy("multiple") }
+                                    .padding(vertical = 8.dp)
+                                    .testTag("strategy_multiple_button"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = tr("🎯 Múltiple", "🎯 Multiple"),
+                                    fontWeight = if (isMultiple) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isMultiple) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 13.sp
+                                )
+                            }
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isReduced) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
-                                .clickable { viewModel.setStrategy("reducida") }
-                                .padding(vertical = 8.dp)
-                                .testTag("strategy_reducida_button"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tr("🧩 Reducida", "🧩 Reduced"),
-                                fontWeight = if (isReduced) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isReduced) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 13.sp
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isReduced) gamePrimaryColor.copy(alpha = 0.15f) else Color.Transparent)
+                                    .clickable { viewModel.setStrategy("reducida") }
+                                    .padding(vertical = 8.dp)
+                                    .testTag("strategy_reducida_button"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = tr("🧩 Reducida", "🧩 Reduced"),
+                                    fontWeight = if (isReduced) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isReduced) gamePrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 13.sp
+                                )
+                            }
                         }
                     }
                 }
