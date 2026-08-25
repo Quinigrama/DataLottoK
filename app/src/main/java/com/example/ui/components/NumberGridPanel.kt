@@ -29,6 +29,7 @@ fun NumberGridPanel(
     maxNumber: Int,
     selectedNumbers: Set<Int>,
     onNumberClick: (Int) -> Unit,
+    getMarking: (Int) -> BallMarking = { BallMarking.NONE },
     isStar: Boolean = false,
     ballSize: Dp = if (isStar) 44.dp else 40.dp,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
@@ -38,14 +39,13 @@ fun NumberGridPanel(
 ) {
     val numberRange = maxNumber - minNumber + 1
     val (cols, rows) = layout.getDimensions(numberRange)
-    val extraColors = LocalExtraColors.current
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-            .border(1.dp, extraColors.cardBorder, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFC44A4A).copy(alpha = 0.04f))
+            .border(1.dp, Color(0xFFC44A4A).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
             .padding(14.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -64,6 +64,7 @@ fun NumberGridPanel(
                             LotteryBall(
                                 number = num,
                                 isSelected = selectedNumbers.contains(num),
+                                marking = getMarking(num),
                                 onClick = { onNumberClick(num) },
                                 size = ballSize,
                                 isStar = isStar,

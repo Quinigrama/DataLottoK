@@ -44,10 +44,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.LocalExtraColors
 
+enum class BallMarking {
+    NONE, FAVORITE, HOT, COLD, ABSENT
+}
+
 @Composable
 fun LotteryBall(
     number: Int,
     isSelected: Boolean = false,
+    marking: BallMarking = BallMarking.NONE,
     onClick: (() -> Unit)? = null,
     size: Dp = 44.dp,
     isStar: Boolean = false,
@@ -74,10 +79,61 @@ fun LotteryBall(
         label = "ball_scale"
     )
 
+    val targetTextColor = if (isSelected) {
+        Color.White
+    } else {
+        when (marking) {
+            BallMarking.FAVORITE -> Color(0xFFF57F17)
+            BallMarking.HOT -> Color(0xFFD32F2F)
+            BallMarking.COLD -> Color(0xFF0277BD)
+            BallMarking.ABSENT -> Color(0xFF37474F)
+            BallMarking.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    }
+
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = targetTextColor,
         label = "ball_text"
     )
+
+    val backgroundBrush = if (isSelected) {
+        Brush.linearGradient(
+            colors = listOf(Color(0xFFFFD700), Color(0xFFFFA000))
+        )
+    } else {
+        when (marking) {
+            BallMarking.FAVORITE -> Brush.linearGradient(
+                colors = listOf(Color(0xFFFFF9C4), Color(0xFFFFF59D))
+            )
+            BallMarking.HOT -> Brush.linearGradient(
+                colors = listOf(Color(0xFFFFEBEE), Color(0xFFFFCDD2))
+            )
+            BallMarking.COLD -> Brush.linearGradient(
+                colors = listOf(Color(0xFFE1F5FE), Color(0xFFB3E5FC))
+            )
+            BallMarking.ABSENT -> Brush.linearGradient(
+                colors = listOf(Color(0xFFCFD8DC), Color(0xFFB0BEC5))
+            )
+            BallMarking.NONE -> Brush.linearGradient(
+                colors = listOf(
+                    extraColors.ballUnselectedStart,
+                    extraColors.ballUnselectedEnd
+                )
+            )
+        }
+    }
+
+    val borderColor = if (isSelected) {
+        Color(0xFFFF8F00)
+    } else {
+        when (marking) {
+            BallMarking.FAVORITE -> Color(0xFFFBC02D)
+            BallMarking.HOT -> Color(0xFFFF5722)
+            BallMarking.COLD -> Color(0xFF03A9F4)
+            BallMarking.ABSENT -> Color(0xFF78909C)
+            BallMarking.NONE -> extraColors.ballUnselectedBorder
+        }
+    }
 
     val shape = if (isStar) RoundedCornerShape(10.dp) else CircleShape
 
@@ -105,31 +161,10 @@ fun LotteryBall(
                 clip = false
             )
             .clip(shape)
-            .then(
-                if (isSelected) {
-                    Modifier.background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFFFFD700), Color(0xFFFFA000))
-                        )
-                    )
-                } else {
-                    Modifier.background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                extraColors.ballUnselectedStart,
-                                extraColors.ballUnselectedEnd
-                            )
-                        )
-                    )
-                }
-            )
+            .background(backgroundBrush)
             .border(
                 width = 2.dp,
-                color = if (isSelected) {
-                    Color(0xFFFF8F00)
-                } else {
-                    extraColors.ballUnselectedBorder
-                },
+                color = borderColor,
                 shape = shape
             )
             .then(clickModifier)
@@ -157,7 +192,7 @@ fun LotteryBall(
                 text = number.toString(),
                 color = textColor,
                 fontSize = if (size > 40.dp) 16.sp else 13.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                fontWeight = if (isSelected || marking != BallMarking.NONE) FontWeight.Bold else FontWeight.Medium
             )
         }
     }

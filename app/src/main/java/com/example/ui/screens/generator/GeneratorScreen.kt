@@ -1,5 +1,6 @@
 package com.example.ui.screens.generator
 
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -9,6 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,6 +73,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,8 +82,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GameConfig
 import com.example.logic.GridLayout
 import com.example.logic.MultipleTicketCalculator
+import com.example.logic.NumberClassification
 import com.example.logic.ReducedSystemCalculator
 import com.example.logic.StatisticsEngine
+import com.example.ui.components.BallMarking
 import com.example.ui.components.LotteryBall
 import com.example.ui.components.NumberGridPanel
 import com.example.ui.theme.BrandDanger
@@ -91,6 +96,7 @@ import com.example.ui.theme.BrandWarning
 import com.example.ui.theme.LocalExtraColors
 import com.example.ui.theme.tr
 import com.example.ui.viewmodel.LotteryViewModel
+import com.example.ui.viewmodel.MarkingMode
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -112,8 +118,22 @@ fun GeneratorScreen(
     val savedTickets by viewModel.savedTickets.collectAsStateWithLifecycle()
     val feedbackMessage by viewModel.userFeedback.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+    val simulatedDraws by viewModel.simulatedDraws.collectAsStateWithLifecycle()
+    val manualHot by viewModel.manualHot.collectAsStateWithLifecycle()
+    val manualCold by viewModel.manualCold.collectAsStateWithLifecycle()
+    val manualAbsent by viewModel.manualAbsent.collectAsStateWithLifecycle()
+    val favoriteNumbers by viewModel.favoriteNumbers.collectAsStateWithLifecycle()
+    val favoriteStars by viewModel.favoriteStars.collectAsStateWithLifecycle()
+    val markingMode by viewModel.markingMode.collectAsStateWithLifecycle()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val extraColors = LocalExtraColors.current
+
+    LaunchedEffect(currentGame.id) {
+        viewModel.loadFavorites(context, currentGame.id)
+        viewModel.clearManualOverrides()
+    }
 
     LaunchedEffect(feedbackMessage) {
         feedbackMessage?.let { msg ->
@@ -147,6 +167,62 @@ fun GeneratorScreen(
             Triple(1, currentGame.costPerBet, null)
         }
     }
+
+    val mainClassifications = remember(simulatedDraws, currentGame) {
+        if (simulatedDraws.isNotEmpty()) {
+            StatisticsEngine.computeFrequencies(simulatedDraws, currentGame, isSecondary = false)
+                .associateBy({ it.number }, { it.classification })
+        } else {
+            emptyMap()
+        }
+    }
+
+    val starClassifications = remember(simulatedDraws, currentGame) {
+        if (simulatedDraws.isNotEmpty() && currentGame.hasSecondaryMatrix) {
+            StatisticsEngine.computeFrequencies(simulatedDraws, currentGame, isSecondary = true)
+                .associateBy({ it.number }, { it.classification })
+        } else {
+            emptyMap()
+        }
+    }
+
+    fun getMainBallMarking(num: Int): BallMarking {
+        return if (favoriteNumbers.contains(num)) {
+            BallMarking.FAVORITE
+        } else if (manualHot.contains(num)) {
+            BallMarking.HOT
+        } else if (manualCold.contains(num)) {
+            BallMarking.COLD
+        } else if (manualAbsent.contains(num)) {
+            BallMarking.ABSENT
+        } else {
+            when (mainClassifications[num]) {
+                NumberClassification.HOT -> BallMarking.HOT
+                NumberClassification.COLD -> BallMarking.COLD
+                else -> BallMarking.NONE
+            }
+        }
+    }
+
+    fun getStarBallMarking(num: Int): BallMarking {
+        return if (favoriteStars.contains(num)) {
+            BallMarking.FAVORITE
+        } else if (manualHot.contains(num)) {
+            BallMarking.HOT
+        } else if (manualCold.contains(num)) {
+            BallMarking.COLD
+        } else if (manualAbsent.contains(num)) {
+            BallMarking.ABSENT
+        } else {
+            when (starClassifications[num]) {
+                NumberClassification.HOT -> BallMarking.HOT
+                NumberClassification.COLD -> BallMarking.COLD
+                else -> BallMarking.NONE
+            }
+        }
+    }
+
+    val maxFavoritesMsg = tr("Máximo 10 favoritos", "Maximum 10 favorites")
 
     val isSimplePrimaryComplete = selectedNumbers.size == currentGame.pickCount
     val isSimpleSecondaryComplete = !currentGame.hasSecondaryMatrix ||
@@ -1115,12 +1191,75 @@ fun GeneratorScreen(
                                         )
                                     }
 
+                                    // Botonera de marcado manual: Frío ❄️ / Caliente 🔥 / Ausente 👻 / Favorito ⭐
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // ❄️ Frío
+                                        MarkingCircleButton(
+                                            icon = "❄️",
+                                            isActive = markingMode == MarkingMode.COLD,
+                                            activeBackground = Color(0xFF2196F3),
+                                            activeBorder = Color(0xFF1976D2),
+                                            inactiveBackground = Color(0xFFE3F2FD),
+                                            inactiveBorder = Color(0xFF2196F3),
+                                            onClick = { viewModel.setMarkingMode(MarkingMode.COLD) }
+                                        )
+
+                                        // 🔥 Caliente
+                                        MarkingCircleButton(
+                                            icon = "🔥",
+                                            isActive = markingMode == MarkingMode.HOT,
+                                            activeBackground = Color(0xFFF44336),
+                                            activeBorder = Color(0xFFD32F2F),
+                                            inactiveBackground = Color(0xFFFFEBEE),
+                                            inactiveBorder = Color(0xFFF44336),
+                                            onClick = { viewModel.setMarkingMode(MarkingMode.HOT) }
+                                        )
+
+                                        // 👻 Ausente
+                                        MarkingCircleButton(
+                                            icon = "👻",
+                                            isActive = markingMode == MarkingMode.ABSENT,
+                                            activeBackground = Color(0xFF607D8B),
+                                            activeBorder = Color(0xFF455A64),
+                                            inactiveBackground = Color(0xFFECEFF1),
+                                            inactiveBorder = Color(0xFF607D8B),
+                                            onClick = { viewModel.setMarkingMode(MarkingMode.ABSENT) }
+                                        )
+
+                                        // ⭐ Favorito
+                                        MarkingCircleButton(
+                                            icon = "⭐",
+                                            isActive = markingMode == MarkingMode.FAVORITE,
+                                            activeBackground = Color(0xFFFBC02D),
+                                            activeBorder = Color(0xFFF57F17),
+                                            inactiveBackground = Color(0xFFFFF9C4),
+                                            inactiveBorder = Color(0xFFFBC02D),
+                                            onClick = { viewModel.setMarkingMode(MarkingMode.FAVORITE) }
+                                        )
+                                    }
+
                                     NumberGridPanel(
                                         layout = currentGame.numbersLayout,
                                         minNumber = currentGame.minNumber,
                                         maxNumber = currentGame.maxNumber,
                                         selectedNumbers = selectedNumbers,
-                                        onNumberClick = { viewModel.toggleNumber(it) },
+                                        getMarking = { getMainBallMarking(it) },
+                                        onNumberClick = { num ->
+                                            if (markingMode == null) {
+                                                viewModel.toggleNumber(num)
+                                            } else {
+                                                val success = viewModel.handleMarkingClick(context, currentGame.id, num, isStar = false)
+                                                if (!success) {
+                                                    Toast.makeText(context, maxFavoritesMsg, Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        },
                                         ballSize = 40.dp,
                                         primaryColor = currentGame.primaryColor,
                                         darkColor = currentGame.darkColor,
@@ -1150,7 +1289,7 @@ fun GeneratorScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(12.dp)
-                                    ) {
+                                        ) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1183,9 +1322,19 @@ fun GeneratorScreen(
                                             minNumber = secMin,
                                             maxNumber = secMax,
                                             selectedNumbers = selectedSecondaryNumbers,
+                                            getMarking = { getStarBallMarking(it) },
                                             isStar = true,
                                             ballSize = 44.dp,
-                                            onNumberClick = { viewModel.toggleSecondaryNumber(it) },
+                                            onNumberClick = { secNum ->
+                                                if (markingMode == null) {
+                                                    viewModel.toggleSecondaryNumber(secNum)
+                                                } else {
+                                                    val success = viewModel.handleMarkingClick(context, currentGame.id, secNum, isStar = true)
+                                                    if (!success) {
+                                                        Toast.makeText(context, maxFavoritesMsg, Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            },
                                             primaryColor = currentGame.secondaryPrimaryColor,
                                             darkColor = currentGame.secondaryDarkColor,
                                             glowColor = currentGame.secondaryGlowColor
@@ -1338,6 +1487,33 @@ fun GeneratorScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MarkingCircleButton(
+    icon: String,
+    isActive: Boolean,
+    activeBackground: Color,
+    activeBorder: Color,
+    inactiveBackground: Color,
+    inactiveBorder: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(42.dp)
+            .clip(CircleShape)
+            .background(if (isActive) activeBackground else inactiveBackground)
+            .border(3.dp, if (isActive) activeBorder else inactiveBorder, CircleShape)
+            .clickable(onClick = onClick)
+    ) {
+        Text(
+            text = icon,
+            fontSize = 18.sp
+        )
     }
 }
 

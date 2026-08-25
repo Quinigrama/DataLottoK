@@ -1,8 +1,10 @@
 package com.example.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.data.local.FavoritesPreferences
 import com.example.data.model.GameConfig
 import com.example.data.model.SavedTicket
 import com.example.data.repository.TicketRepository
@@ -18,12 +20,37 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+enum class MarkingMode {
+    COLD, HOT, ABSENT, FAVORITE
+}
+
 class LotteryViewModel(
     private val repository: TicketRepository
 ) : ViewModel() {
 
     private val _currentGame = MutableStateFlow(GameConfig.Bonoloto)
     val currentGame: StateFlow<GameConfig> = _currentGame.asStateFlow()
+
+    // Modo de marcado manual: Frío, Caliente, Ausente, Favorito
+    private val _markingMode = MutableStateFlow<MarkingMode?>(null)
+    val markingMode: StateFlow<MarkingMode?> = _markingMode.asStateFlow()
+
+    // Ajustes manuales por encima de la clasificación automática
+    private val _manualHot = MutableStateFlow<Set<Int>>(emptySet())
+    val manualHot: StateFlow<Set<Int>> = _manualHot.asStateFlow()
+
+    private val _manualCold = MutableStateFlow<Set<Int>>(emptySet())
+    val manualCold: StateFlow<Set<Int>> = _manualCold.asStateFlow()
+
+    private val _manualAbsent = MutableStateFlow<Set<Int>>(emptySet())
+    val manualAbsent: StateFlow<Set<Int>> = _manualAbsent.asStateFlow()
+
+    // Favoritos persistentes por juego
+    private val _favoriteNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    val favoriteNumbers: StateFlow<Set<Int>> = _favoriteNumbers.asStateFlow()
+
+    private val _favoriteStars = MutableStateFlow<Set<Int>>(emptySet())
+    val favoriteStars: StateFlow<Set<Int>> = _favoriteStars.asStateFlow()
 
     // Estrategia de juego: "simple", "multiple" o "reducida"
     private val _strategy = MutableStateFlow("simple")
@@ -120,6 +147,7 @@ class LotteryViewModel(
             _selectedNumbers.value = emptySet()
             _selectedSecondaryNumbers.value = emptySet()
             _simulatedDraws.value = emptyList()
+            clearManualOverrides()
             _strategy.value = "simple"
             val options = MultipleTicketCalculator.getOptions(game)
             _multipleNumberCount.value = options.defaultNumber
@@ -130,6 +158,72 @@ class LotteryViewModel(
             _reducedSystemId.value = systems.firstOrNull()?.id
             _userFeedback.value = "Cambiado a ${game.name}"
         }
+    }
+
+    fun setMarkingMode(mode: MarkingMode?) {
+        _markingMode.value = if (_markingMode.value == mode) null else mode
+    }
+
+    fun handleMarkingClick(
+        context: Context,
+        gameId: String,
+        number: Int,
+        isStar: Boolean = false
+    ): Boolean {
+        val mode = _markingMode.value ?: return true
+        return when (mode) {
+            MarkingMode.FAVORITE -> {
+                val success = FavoritesPreferences.toggleFavorite(context, gameId, number, isStar)
+                if (success) {
+                    loadFavorites(context, gameId)
+                }
+                success
+            }
+            MarkingMode.HOT -> {
+                val current = _manualHot.value
+                if (current.contains(number)) {
+                    _manualHot.value = current - number
+                } else {
+                    _manualHot.value = current + number
+                    _manualCold.value = _manualCold.value - number
+                    _manualAbsent.value = _manualAbsent.value - number
+                }
+                true
+            }
+            MarkingMode.COLD -> {
+                val current = _manualCold.value
+                if (current.contains(number)) {
+                    _manualCold.value = current - number
+                } else {
+                    _manualCold.value = current + number
+                    _manualHot.value = _manualHot.value - number
+                    _manualAbsent.value = _manualAbsent.value - number
+                }
+                true
+            }
+            MarkingMode.ABSENT -> {
+                val current = _manualAbsent.value
+                if (current.contains(number)) {
+                    _manualAbsent.value = current - number
+                } else {
+                    _manualAbsent.value = current + number
+                    _manualHot.value = _manualHot.value - number
+                    _manualCold.value = _manualCold.value - number
+                }
+                true
+            }
+        }
+    }
+
+    fun loadFavorites(context: Context, gameId: String) {
+        _favoriteNumbers.value = FavoritesPreferences.getFavorites(context, gameId, isStar = false)
+        _favoriteStars.value = FavoritesPreferences.getFavorites(context, gameId, isStar = true)
+    }
+
+    fun clearManualOverrides() {
+        _manualHot.value = emptySet()
+        _manualCold.value = emptySet()
+        _manualAbsent.value = emptySet()
     }
 
     fun setTicketFilter(gameId: String?) {
