@@ -57,12 +57,66 @@ class ExampleUnitTest {
 
   @Test
   fun testGameConfigLookup() {
-    assertEquals(4, GameConfig.AvailableGames.size)
+    assertEquals(5, GameConfig.AvailableGames.size)
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("bonoloto"))
     assertEquals(GameConfig.LaPrimitiva, GameConfig.findById("primitiva"))
     assertEquals(GameConfig.Euromillones, GameConfig.findById("euromillones"))
     assertEquals(GameConfig.EuroDreams, GameConfig.findById("eurodreams"))
+    assertEquals(GameConfig.Gordo, GameConfig.findById("gordo"))
     assertEquals(GameConfig.Bonoloto, GameConfig.findById("unknown_game"))
+  }
+
+  @Test
+  fun testGordoGenerator() {
+    val gordo = GameConfig.Gordo
+    val result = LotteryGenerator.generateSimple(gordo)
+
+    assertEquals(5, result.primaryNumbers.size)
+    assertEquals(5, result.primaryNumbers.toSet().size)
+    assertTrue(result.primaryNumbers.all { it in 1..54 })
+    assertEquals(result.primaryNumbers.sorted(), result.primaryNumbers)
+
+    assertTrue(gordo.hasSecondaryMatrix)
+    assertEquals(1, result.secondaryNumbers.size)
+    assertTrue(result.secondaryNumbers.all { it in 0..9 })
+    assertEquals("gordo", gordo.id)
+    assertEquals("El Gordo", gordo.name)
+    assertEquals("🇪🇸", gordo.flagEmoji)
+  }
+
+  @Test
+  fun testGordoPrizeCalculation() {
+    val gordo = GameConfig.Gordo
+
+    // 1ª categoría: 5 + 1🔑
+    val tier1 = com.example.logic.PrizeCalculator.calculatePrize(gordo, 5, 1)
+    assertTrue(tier1.isWinner)
+    assertEquals(1, tier1.tier?.category)
+
+    // 2ª categoría: 5 + 0🔑
+    val tier2 = com.example.logic.PrizeCalculator.calculatePrize(gordo, 5, 0)
+    assertTrue(tier2.isWinner)
+    assertEquals(2, tier2.tier?.category)
+
+    // 8ª categoría: 2 + 0🔑
+    val tier8 = com.example.logic.PrizeCalculator.calculatePrize(gordo, 2, 0)
+    assertTrue(tier8.isWinner)
+    assertEquals(8, tier8.tier?.category)
+
+    // Reintegro: 0 + 1🔑
+    val reintegro0 = com.example.logic.PrizeCalculator.calculatePrize(gordo, 0, 1)
+    assertTrue(reintegro0.isWinner)
+    assertEquals(9, reintegro0.tier?.category)
+
+    // Reintegro: 1 + 1🔑
+    val reintegro1 = com.example.logic.PrizeCalculator.calculatePrize(gordo, 1, 1)
+    assertTrue(reintegro1.isWinner)
+    assertEquals(9, reintegro1.tier?.category)
+
+    // Sin premio: 1 + 0🔑
+    val noPrize = com.example.logic.PrizeCalculator.calculatePrize(gordo, 1, 0)
+    org.junit.Assert.assertFalse(noPrize.isWinner)
+    assertTrue(noPrize.prizeLabel.contains("Sin premio"))
   }
 
   @Test

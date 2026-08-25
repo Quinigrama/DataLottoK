@@ -459,7 +459,7 @@ fun GeneratorScreen(
                             )
                         }
 
-                        if (currentGame.id != "eurodreams") {
+                        if (currentGame.id != "eurodreams" && currentGame.id != "gordo") {
                             Box(
                                 modifier = Modifier
                                     .weight(1f)

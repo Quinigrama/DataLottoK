@@ -52,6 +52,21 @@ object PrizeCalculator {
     )
 
     /**
+     * Tabla oficial completa de las 8 categorías + reintegro de El Gordo
+     */
+    val GORDO_TIERS = listOf(
+        PrizeTier(category = 1, name = "1ª Categoría (5 + 1🔑)", hits = 5, starHits = 1, basePrize = 5000000.0),
+        PrizeTier(category = 2, name = "2ª Categoría (5 + 0🔑)", hits = 5, starHits = 0, basePrize = 150000.0),
+        PrizeTier(category = 3, name = "3ª Categoría (4 + 1🔑)", hits = 4, starHits = 1, basePrize = 8000.0),
+        PrizeTier(category = 4, name = "4ª Categoría (4 + 0🔑)", hits = 4, starHits = 0, basePrize = 200.0),
+        PrizeTier(category = 5, name = "5ª Categoría (3 + 1🔑)", hits = 3, starHits = 1, basePrize = 50.0),
+        PrizeTier(category = 6, name = "6ª Categoría (3 + 0🔑)", hits = 3, starHits = 0, basePrize = 15.0),
+        PrizeTier(category = 7, name = "7ª Categoría (2 + 1🔑)", hits = 2, starHits = 1, basePrize = 6.0),
+        PrizeTier(category = 8, name = "8ª Categoría (2 + 0🔑)", hits = 2, starHits = 0, basePrize = 3.0),
+        PrizeTier(category = 9, name = "Reintegro (0-1 + 1🔑)", hits = 0, starHits = 1, basePrize = 1.50)
+    )
+
+    /**
      * Calcula la categoría de premio correspondiente a los aciertos obtenidos
      */
     fun calculatePrize(game: GameConfig, hits: Int, starHits: Int = 0): PrizeResult {
@@ -101,6 +116,37 @@ object PrizeCalculator {
                         starHits = starHits,
                         tier = null,
                         prizeLabel = "Sin premio ($hits + $starHits🌙)"
+                    )
+                }
+            }
+            "gordo" -> {
+                val tier = when {
+                    hits == 5 && starHits == 1 -> GORDO_TIERS[0]
+                    hits == 5 && starHits == 0 -> GORDO_TIERS[1]
+                    hits == 4 && starHits == 1 -> GORDO_TIERS[2]
+                    hits == 4 && starHits == 0 -> GORDO_TIERS[3]
+                    hits == 3 && starHits == 1 -> GORDO_TIERS[4]
+                    hits == 3 && starHits == 0 -> GORDO_TIERS[5]
+                    hits == 2 && starHits == 1 -> GORDO_TIERS[6]
+                    hits == 2 && starHits == 0 -> GORDO_TIERS[7]
+                    (hits == 0 || hits == 1) && starHits == 1 -> GORDO_TIERS[8]
+                    else -> null
+                }
+                if (tier != null) {
+                    PrizeResult(
+                        isWinner = true,
+                        hits = hits,
+                        starHits = starHits,
+                        tier = tier,
+                        prizeLabel = tier.name
+                    )
+                } else {
+                    PrizeResult(
+                        isWinner = false,
+                        hits = hits,
+                        starHits = starHits,
+                        tier = null,
+                        prizeLabel = "Sin premio ($hits + $starHits🔑)"
                     )
                 }
             }
