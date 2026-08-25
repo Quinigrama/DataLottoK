@@ -164,7 +164,7 @@ data class GameConfig(
             glowColor = Color(0xFFF59E0B),
             containerColor = Color(0xFFFEF3C7),
             onContainerColor = Color(0xFF78350F),
-            numbersLayout = GridLayout.Standard(columns = 6),
+            numbersLayout = GridLayout.DecadeColumn,
             secondaryLayout = GridLayout.Standard(columns = 5),
             hasSecondaryMatrix = true,
             secondaryMinNumber = 0,               // Empieza en 0 (0-9)
@@ -177,7 +177,7 @@ data class GameConfig(
             secondaryGlowColor = Color(0xFFFBBF24),
             secondaryContainerColor = Color(0xFFFFFBEB),
             secondaryOnContainerColor = Color(0xFF78350F),
-            drawDays = listOf(7),                 // Domingo
+            drawDays = listOf(0),                 // Domingo (0 = Domingo en formatDrawDays)
             costPerBet = 1.50
         )
 
